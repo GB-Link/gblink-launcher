@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GB Link Launcher</title>
+    <meta name="description" content="Launch GB Link game clients">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="background-gradients">
+        <div class="gradient-blob blob-1"></div>
+        <div class="gradient-blob blob-2"></div>
+    </div>
+
+    <header class="site-header">
+        <div class="container container-wide">
+            <a href="https://gblink.io" target="_blank" rel="noopener noreferrer" class="logo">GB Link</a>
+            <nav class="nav-group">
+                <a href="https://gblink.io" target="_blank" rel="noopener noreferrer" class="nav-link">Official Site</a>
+                <a href="https://discord.gg/xj9yTy5mW4" target="_blank" rel="noopener noreferrer" title="Join Discord" class="social-link">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037 13.43 13.43 0 0 0-.585 1.198 17.51 17.51 0 0 0-5.594 0 13.568 13.568 0 0 0-.588-1.198.077.077 0 0 0-.078-.037 19.825 19.825 0 0 0-4.885 1.515.069.069 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.086 2.157 2.419 0 1.334-.956 2.42-2.157 2.42zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.086 2.157 2.419 0 1.334-.946 2.42-2.157 2.42z"/>
+                    </svg>
+                </a>
+                <a href="https://www.youtube.com/@gblinkio" target="_blank" rel="noopener noreferrer" title="YouTube Channel" class="social-link">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                </a>
+                <a href="https://github.com/starlarkus/GBLink-Firmware/releases" target="_blank" rel="noopener noreferrer" class="nav-link">USB Firmware</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h2 class="hero-title">Game <span class="text-gradient">Launcher</span></h2>
+                <p class="hero-subtitle">Select a game, app or tool to use with your adapter.</p>
+            </div>
+        </section>
+
+        <div class="container container-wide">
+            <section class="games-section">
+                <div id="game-grid" class="game-grid">
+                    <p class="game-grid-status">Loading games…</p>
+                </div>
+
+                <div class="checkbox-field">
+                    <input type="checkbox" id="auto-redirect" name="auto-redirect">
+                    <label for="auto-redirect">Automatically redirect to my game/tool choice next time</label>
+                </div>
+            </section>
+
+            <section class="panel-section device-section">
+                <div class="glass-panel">
+                    <h3 class="section-heading">Device Health</h3>
+
+                    <div id="device-disconnected" class="device-disconnected">
+                        <p class="device-prompt">Connect your GB Link adapter to view device health and upgrade your adapter.</p>
+                        <button type="button" id="device-connect" class="btn btn-primary">
+                            Connect
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div id="device-connected" class="device-connected" hidden>
+                        <div class="info-grid">
+                            <div class="info-row">
+                                <span class="info-label">Status</span>
+                                <span id="device-status" class="info-value status-connected">Connected</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Firmware</span>
+                                <span class="info-value-wrap">
+                                    <button type="button" id="device-firmware" class="info-value info-value--copyable" title="Click to copy">Unknown</button>
+                                    <span id="device-firmware-copied" class="info-copied" hidden>Copied</span>
+                                </span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">USB ID</span>
+                                <span id="device-usb-id" class="info-value">—</span>
+                            </div>
+                        </div>
+
+                        <div id="device-update" class="device-update" hidden>
+                            <p class="device-update-text">
+                                <span class="device-update-heading">
+                                    <svg class="device-update-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                        <line x1="12" y1="9" x2="12" y2="13"/>
+                                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                    </svg>
+                                    Update available:
+                                    <span id="device-update-version" class="device-update-version"></span>
+                                </span>
+                            </p>
+                            <a id="device-update-link" class="device-update-link" href="#" download>
+                                Download firmware (.uf2)
+                            </a>
+                            <ol class="device-update-steps">
+                                <li>Disconnect the adapter here, then unplug it from your computer.</li>
+                                <li>Hold <strong>BOOTSEL</strong> on the board, plug in USB, and release BOOTSEL. A drive named <strong>RPI-RP2</strong> should appear.</li>
+                                <li>Drag the downloaded <strong>.uf2</strong> file onto that drive. The board will reboot automatically.</li>
+                                <li>Plug the adapter back in and connect again to confirm the new firmware version.</li>
+                            </ol>
+                        </div>
+
+                        <button type="button" id="device-disconnect" class="btn btn-secondary">Disconnect</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="redirect-overlay" class="redirect-overlay" hidden>
+        <div class="redirect-panel glass-panel">
+            <div id="redirect-icon" class="card-icon" aria-hidden="true"></div>
+            <p class="redirect-message">
+                Redirecting to <span id="redirect-game-name" class="redirect-game-name"></span> in
+                <span id="redirect-seconds" class="redirect-seconds">5</span>…
+            </p>
+            <button type="button" id="redirect-cancel" class="redirect-cancel">Cancel</button>
+        </div>
+    </div>
+
+    <section class="browser-info" aria-label="Browser compatibility">
+        <div class="container container-wide">
+            <p class="browser-info-line">
+                <span>WebUSB: <span id="browser-webusb" class="browser-webusb">Checking…</span></span>
+                <span class="browser-info-sep" aria-hidden="true">·</span>
+                <span>Browser: <span id="browser-name" class="browser-name">—</span></span>
+            </p>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <p>Project by <a href="https://github.com/starlarkus" target="_blank" rel="noopener noreferrer">Starlark</a> and <a href="https://github.com/raphaelz" target="_blank" rel="noopener noreferrer">raphaelz</a></p>
+    </footer>
+
+    <script type="module" src="assets/js/launcher.js"></script>
+</body>
+</html>

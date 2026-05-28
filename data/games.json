@@ -1,0 +1,51 @@
+[
+  {
+    "name": "Pokémon Gen 3 Battle, Trade & Record Mixing",
+    "description": "Online Trading, Battles, and Record Mixing. Works with original, unmodified hardware.",
+    "link": "https://celi0.link/",
+    "icon": "pokemon-icon",
+    "hover_description": "Requires latest firmware"
+  },
+  {
+    "name": "Tetris Online",
+    "description": "Battle against players worldwide. Connect your Game Boy and stack blocks.",
+    "link": "https://tetris.gblink.io",
+    "icon": "tetris-icon"
+  },
+  {
+    "name": "Dr. Mario",
+    "description": "Match capsules against opponents online with original hardware.",
+    "link": "https://drmario.gblink.io",
+    "icon": "drmario-icon"
+  },
+  {
+    "name": "Pokémon Trading",
+    "description": "Trade Gen 1-3 Pokémon directly in your browser. Complete your Pokédex online.",
+    "link": "https://pokemon.gblink.io",
+    "icon": "pokemon-icon"
+  },
+  {
+    "name": "Yoshi",
+    "description": "Stack falling eggs in versus mode. Link up and compete against other players.",
+    "link": "https://yoshi.gblink.io",
+    "icon": "yoshi-icon"
+  },
+  {
+    "name": "Game Boy Printer",
+    "description": "Print your Game Boy Camera photos to digital files.",
+    "link": "https://printer.gblink.io",
+    "icon": "print-icon"
+  },
+  {
+    "name": "GBA Multiboot",
+    "description": "Load homebrew games and tools onto your GBA without a flashcart.",
+    "link": "https://multiboot.gblink.io",
+    "icon": "gba-icon"
+  },
+  {
+    "name": "GB Cart Reader",
+    "description": "Back up your Game Boy and Game Boy Color cartridges using a GBA. Dump ROMs and save files in your browser.",
+    "link": "https://gbadump.gblink.io",
+    "icon": "cartdump-icon"
+  }
+]
