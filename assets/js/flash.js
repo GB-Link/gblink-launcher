@@ -35,6 +35,7 @@ export function createFirmwareUpdater({
     progressEl,
     fallbackEl,
     downloadLinkEl,
+    reconnectBtn,
     supportsOneClick,
 }) {
     // phase: idle | downloading | awaiting-bootrom | flashing | done | error
@@ -50,6 +51,7 @@ export function createFirmwareUpdater({
     let serialSend = null; // set in WebSerial mode — flashing is manual there (no PICOBOOT)
     let usbConnectListener = null;
     let bootromDevice = null; // set when the connected device is already in BOOTSEL
+    let reconnectTimer = null; // delays the post-flash manual Connect button
 
     function versionList() {
         return target?.versions?.length
@@ -135,6 +137,8 @@ export function createFirmwareUpdater({
     function renderIdle() {
         removeConnectListener();
         containerEl.hidden = false;
+        clearTimeout(reconnectTimer);
+        if (reconnectBtn) reconnectBtn.hidden = true;
 
         if (versionEl) versionEl.textContent = `v${target.latest}`;
 
@@ -180,6 +184,8 @@ export function createFirmwareUpdater({
 
     async function startUpdate() {
         if (inFlight() || !target || !selected) return;
+        clearTimeout(reconnectTimer);
+        if (reconnectBtn) reconnectBtn.hidden = true;
 
         // WebSerial mode: no in-browser flashing. Optionally reboot the board to
         // BOOTSEL (≥2.1.2), then the user downloads the .uf2 and drags it on.
@@ -236,7 +242,7 @@ export function createFirmwareUpdater({
         // Otherwise get the running adapter into BOOTSEL mode. Firmware ≥ v2.1.2
         // can reboot itself there; older firmware needs a physical BOOTSEL press.
         if (supportsOneClick(family, version) && device) {
-            setStatus('Adapter is rebooting into update mode… (if it doesn’t continue, click “Select adapter”).');
+            setStatus('Adapter is rebooting into update mode… Click “Select adapter” to continue.');
             try {
                 await device.transferOut(cmdEpOut, new Uint8Array([REBOOT_BOOTLOADER_CMD]));
             } catch {
@@ -372,6 +378,21 @@ export function createFirmwareUpdater({
         } catch {}
     }
 
+    // Forget every granted RP2 bootrom (2e8a) device so stale phantom nodes don't
+    // pile up in the browser's WebUSB permission cache between flashes. Called
+    // after a successful flash, once the board has rebooted back to its firmware.
+    async function forgetAllBootromGrants() {
+        if (!navigator.usb?.getDevices) return;
+        try {
+            const devices = await navigator.usb.getDevices();
+            for (const d of devices) {
+                if (d.vendorId === PICOBOOT_BOOTROM_VID) {
+                    try { await d.forget?.(); } catch {}
+                }
+            }
+        } catch {}
+    }
+
     // Open the PICOBOOT connection, retrying the transient "Access denied" that
     // can occur right after the bootrom re-enumerates (the device node isn't
     // immediately grabbable on Linux).
@@ -411,13 +432,30 @@ export function createFirmwareUpdater({
             }
             await closePicoboot(picoboot);
 
-            // Keep the bootrom grant so the next flash can auto-acquire it (the
-            // connect event only fires for already-permitted devices). Stale
-            // duplicates are cleared when the user presses "Select adapter".
+            // Clear every granted RP2 bootrom (2e8a) device. The board has already
+            // rebooted out of BOOTSEL, so these grants are stale — forgetting them
+            // keeps the browser's permission cache clean (Linux in particular
+            // spawns phantom "RP2 Boot" nodes). The next flash re-grants via the
+            // "Select adapter" chooser.
+            await forgetAllBootromGrants();
+
             lastFlashedTo = selected.version;
             phase = 'done';
             showProgress(false);
-            setStatus(`✓ Firmware v${selected.version} installed. Reconnecting…`, 'ok');
+            setStatus(`✓ Firmware v${selected.version} installed. Attempting auto reconnect…`, 'ok');
+            // The board usually re-enumerates and auto-reconnects within a moment.
+            // But crossing firmware families (e.g. 1.x↔2.x) changes the USB identity,
+            // so the page has no permission for the new device and auto-reconnect
+            // can't fire. If we're still waiting after 1s, surface a manual Connect
+            // (in place of the now-hidden flash button) so the user can re-grant it.
+            // A successful (re)connect runs renderIdle(), which clears the timer and
+            // hides the button — so a fast auto-reconnect never reveals it.
+            clearTimeout(reconnectTimer);
+            if (reconnectBtn) {
+                reconnectTimer = setTimeout(() => {
+                    if (phase === 'done') reconnectBtn.hidden = false;
+                }, 1000);
+            }
         } catch (err) {
             console.error('Flashing failed:', err);
             await closePicoboot(picoboot);

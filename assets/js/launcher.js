@@ -562,6 +562,7 @@ function createDeviceHealth({
     disconnectedEl,
     connectedEl,
     connectBtn,
+    reconnectBtn,
     disconnectBtn,
     statusEl,
     firmwareEl,
@@ -1097,15 +1098,23 @@ function createDeviceHealth({
         resetPanel();
     }
 
-    connectBtn.addEventListener('click', () => {
+    function handleConnectButton() {
         if (navigator.usb) connect();
         else if (webSerialAvailable()) connectSerial();
         else window.alert('This browser supports neither WebUSB nor WebSerial. Use Chrome/Edge, or Firefox 151+.');
-    });
+    }
+    connectBtn.addEventListener('click', handleConnectButton);
+    // The post-flash "Reconnecting…" Connect button (shown by the updater) uses the
+    // same path. It's the manual fallback when a flashed board re-enumerates with a
+    // different USB identity — e.g. crossing 1.x↔2.x firmware families — so the page
+    // has no permission for the new device and the auto-reconnect can't fire.
+    if (reconnectBtn) reconnectBtn.addEventListener('click', handleConnectButton);
     disconnectBtn.addEventListener('click', () => disconnect());
 
     if (!navigator.usb && webSerialAvailable()) {
         // Firefox / no-WebUSB fallback: connect over WebSerial instead.
+        // No auto-connect on load — the adapter is only opened when the user
+        // presses Connect, so the launcher never grabs a port it isn't using.
         navigator.serial.addEventListener('disconnect', event => {
             if (activeSerial && event.target === activeSerial.port) {
                 // Mid-update (e.g. after the 0x43 reboot) the updater owns the
@@ -1115,15 +1124,14 @@ function createDeviceHealth({
                 if (!keepPanel) resetPanel();
             }
         });
-
-        navigator.serial.getPorts().then(ports => {
-            const known = ports.find(p =>
-                SERIAL_FILTERS.some(f => f.usbVendorId === p.getInfo().usbVendorId));
-            if (known) connectSerial(known);
-        }).catch(() => {});
     }
 
     if (navigator.usb) {
+        // No auto-connect on initial page load: the launcher never opens an adapter
+        // that's already present when the page opens, so a tab on a second monitor /
+        // another browser won't grab a device in use elsewhere. We DO auto-reconnect
+        // on a post-load hotplug (the 'connect' event below) — that's how the adapter
+        // comes back on its own after it reboots into freshly-flashed firmware.
         navigator.usb.addEventListener('disconnect', event => {
             if (activeDevice && event.device === activeDevice) {
                 // Release our handle so the departed device is reaped cleanly
@@ -1138,17 +1146,13 @@ function createDeviceHealth({
             }
         });
 
-        // Auto-connect a known adapter when it appears — on first load and when
-        // it re-enumerates after a firmware update.
+        // Auto-reconnect the adapter when it (re)appears after load — chiefly to
+        // pick the board back up once it reboots into the freshly-flashed firmware.
+        // The 'connect' event only fires for post-load hotplugs (and only for
+        // already-permitted devices), so this never grabs a device on page load.
         navigator.usb.addEventListener('connect', event => {
             const isKnown = GBLINK_USB_FILTERS.some(f => f.vendorId === event.device.vendorId);
             if (isKnown && !activeDevice && !connecting) connect(event.device);
-        });
-
-        navigator.usb.getDevices().then(devices => {
-            const known = devices.find(d =>
-                GBLINK_USB_FILTERS.some(f => f.vendorId === d.vendorId));
-            if (known) connect(known);
         });
     }
 
@@ -1211,6 +1215,7 @@ function initDeviceHealthPanel() {
         progressEl: document.getElementById('device-update-progress'),
         fallbackEl: document.getElementById('device-update-fallback'),
         downloadLinkEl: document.getElementById('device-update-link'),
+        reconnectBtn: document.getElementById('device-update-reconnect'),
         supportsOneClick: supportsRebootToBootsel,
     });
 
@@ -1218,6 +1223,7 @@ function initDeviceHealthPanel() {
         disconnectedEl: document.getElementById('device-disconnected'),
         connectedEl: document.getElementById('device-connected'),
         connectBtn: document.getElementById('device-connect'),
+        reconnectBtn: document.getElementById('device-update-reconnect'),
         disconnectBtn: document.getElementById('device-disconnect'),
         statusEl: document.getElementById('device-status'),
         firmwareEl: document.getElementById('device-firmware'),

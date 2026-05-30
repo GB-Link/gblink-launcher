@@ -784,13 +784,15 @@ main {
 }
 
 #device-update-flash,
-#device-update-select {
+#device-update-select,
+#device-update-reconnect {
     width: 100%;
     margin-bottom: 10px;
 }
 
 #device-update-flash[hidden],
-#device-update-select[hidden] {
+#device-update-select[hidden],
+#device-update-reconnect[hidden] {
     display: none;
 }
 
