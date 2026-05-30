@@ -2,8 +2,15 @@
   "gblink": {
     "name": "GBLink-Firmware",
     "repository": "https://github.com/starlarkus/GBLink-Firmware",
-    "latest": "2.1.1",
+    "latest": "2.1.2",
     "releases": [
+      {
+        "version": "2.1.2",
+        "tag": "v2.1.2",
+        "name": "One-click in-browser updates (reboot-to-BOOTSEL)",
+        "published": "2026-05-29",
+        "uf2": "https://github.com/starlarkus/GBLink-Firmware/releases/download/v2.1.2/gblink.v2.1.2.uf2"
+      },
       {
         "version": "2.1.1",
         "tag": "v2.1.1",
