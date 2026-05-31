@@ -134,6 +134,7 @@ h1, h2, h3 {
 }
 
 .logo {
+    font-family: var(--font-heading);
     font-size: 1.5rem;
     font-weight: 800;
     letter-spacing: -0.02em;
@@ -171,12 +172,12 @@ main {
     border: 1px solid var(--border-panel);
     backdrop-filter: blur(12px);
     border-radius: 24px;
-    padding: 32px;
+    padding: 20px 24px;
 }
 
 .section-heading {
     font-size: 1.25rem;
-    margin-bottom: 24px;
+    margin-bottom: 14px;
 }
 
 .games-section {
@@ -302,7 +303,7 @@ main {
 .game-grid .pokemon-icon::after { width: 18px; height: 18px; border-width: 1.5px; box-shadow: inset 0 0 0 1.5px var(--bg-dark); }
 .game-grid .tetris-icon::after { width: 9px; height: 9px; box-shadow: -9px 0 0 #a78bfa, 0 9px 0 #a78bfa, 0 0 0 #a78bfa, 9px 0 0 white; }
 .game-grid .print-icon::after { width: 15px; height: 12px; box-shadow: 0 -3px 0 var(--text-muted); border-top-width: 3px; }
-.game-grid .gba-icon::after { width: 21px; height: 14px; border-width: 1.5px; }
+.game-grid .gba-icon::after { width: 21px; height: 14px; border-width: 1.5px; border-radius: 3px 3px 7px 7px; }
 .game-grid .gba-icon::before { width: 10px; height: 6px; }
 .game-grid .drmario-icon::after { width: 21px; height: 9px; }
 .game-grid .drmario-icon::before { width: 1px; height: 9px; }
@@ -460,6 +461,7 @@ main {
     justify-content: center;
     gap: 10px;
     font-size: 0.875rem;
+    margin-bottom: 20px;
 }
 
 .checkbox-field input[type="checkbox"] {
@@ -514,32 +516,184 @@ main {
 
 .device-disconnected {
     text-align: center;
-    padding: 8px 0 4px;
+    padding: 0;
 }
 
 .device-prompt {
     color: var(--text-muted);
     font-size: 0.95rem;
     line-height: 1.5;
-    margin-bottom: 24px;
+    margin: 0 auto 16px;
     max-width: 420px;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 .device-connected .info-grid {
     margin-bottom: 20px;
 }
 
+.device-led {
+    margin-bottom: 14px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-panel);
+}
+
+.device-led[hidden] {
+    display: none;
+}
+
+.device-led-heading {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-main);
+    cursor: pointer;
+    list-style-position: inside;
+}
+
+/* Space the controls from the summary only when expanded. */
+.device-led[open] .device-led-heading {
+    margin-bottom: 10px;
+}
+
+.device-led-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.device-led-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.device-led-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.device-led-brightness {
+    width: 100%;
+    accent-color: var(--primary);
+}
+
+.device-led-swatch {
+    flex-shrink: 0;
+    width: 40px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 6px;
+    background: none;
+    cursor: pointer;
+}
+
+.device-led-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.device-led-reset {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.device-led-reset:hover {
+    color: var(--text-main);
+}
+
+.device-led-reset:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.device-serial-note {
+    margin: 0 0 16px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(56, 189, 248, 0.10);
+    border: 1px solid rgba(56, 189, 248, 0.30);
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--text-muted);
+}
+
+.device-serial-note[hidden] {
+    display: none;
+}
+
+.device-serial-note code {
+    color: var(--text-main);
+}
+
+.device-landing {
+    margin-bottom: 14px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-panel);
+}
+
+.device-landing[hidden] {
+    display: none;
+}
+
+.device-landing-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    line-height: 1.4;
+    cursor: pointer;
+}
+
+.device-landing-row input {
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.device-landing-hint {
+    margin: 6px 0 0 26px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
 .device-update {
-    margin-bottom: 20px;
-    padding: 14px 16px;
+    margin-bottom: 14px;
+    padding: 12px 14px;
     border-radius: 12px;
     background: rgba(168, 85, 247, 0.12);
     border: 1px solid rgba(168, 85, 247, 0.35);
 }
 
 .device-update[hidden] {
+    display: none;
+}
+
+/* Up-to-date state: calmer green accent instead of the purple "action" accent. */
+.device-update--current {
+    background: rgba(34, 197, 94, 0.10);
+    border-color: rgba(34, 197, 94, 0.30);
+}
+
+.device-update--current .device-update-version {
+    color: #86efac;
+}
+
+#device-update-icon[hidden] {
     display: none;
 }
 
@@ -599,13 +753,119 @@ main {
     font-weight: 600;
 }
 
+.device-update-version-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.device-update-version-row[hidden] {
+    display: none;
+}
+
+.device-update-version-select {
+    flex: 1;
+    padding: 6px 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-main);
+    font: inherit;
+}
+
+/* The popup <option> list renders on the OS, not the translucent panel — give
+   it an opaque dark background so the light option text stays readable. */
+.device-update-version-select option {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+}
+
+#device-update-flash,
+#device-update-select,
+#device-update-reconnect {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+#device-update-flash[hidden],
+#device-update-select[hidden],
+#device-update-reconnect[hidden] {
+    display: none;
+}
+
+.device-update-status {
+    margin: 0 0 10px;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: var(--text-main);
+}
+
+.device-update-status[hidden] {
+    display: none;
+}
+
+.device-update-status--error {
+    color: #fca5a5;
+}
+
+.device-update-status--ok {
+    color: #86efac;
+}
+
+.device-update-progress {
+    height: 6px;
+    margin-bottom: 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    overflow: hidden;
+}
+
+.device-update-progress[hidden] {
+    display: none;
+}
+
+.device-update-progress-fill {
+    width: 40%;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #a855f7, #c4b5fd);
+}
+
+.device-update-progress--active .device-update-progress-fill {
+    animation: device-update-indeterminate 1.1s ease-in-out infinite;
+}
+
+@keyframes device-update-indeterminate {
+    0%   { margin-left: -40%; }
+    100% { margin-left: 100%; }
+}
+
+.device-update-fallback {
+    margin-top: 4px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.device-update-fallback[hidden] {
+    display: none;
+}
+
+.device-update-fallback summary {
+    cursor: pointer;
+    margin-bottom: 10px;
+    color: #e9d5ff;
+}
+
 .device-connected .btn-secondary {
     width: 100%;
 }
 
 .info-grid {
     display: grid;
-    gap: 16px;
+    gap: 10px;
 }
 
 .info-row {
@@ -613,7 +873,7 @@ main {
     justify-content: space-between;
     align-items: baseline;
     gap: 16px;
-    padding-bottom: 16px;
+    padding-bottom: 10px;
     border-bottom: 1px solid var(--border-panel);
 }
 

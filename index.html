@@ -22,7 +22,7 @@
 
     <header class="site-header">
         <div class="container container-wide">
-            <a href="https://gblink.io" target="_blank" rel="noopener noreferrer" class="logo">GB Link</a>
+            <a href="https://gblink.io" class="logo">GB Link</a>
             <nav class="nav-group">
                 <a href="https://gblink.io" target="_blank" rel="noopener noreferrer" class="nav-link">Official Site</a>
                 <a href="https://discord.gg/xj9yTy5mW4" target="_blank" rel="noopener noreferrer" title="Join Discord" class="social-link">
@@ -50,13 +50,13 @@
 
         <div class="container container-wide">
             <section class="games-section">
-                <div id="game-grid" class="game-grid">
-                    <p class="game-grid-status">Loading games…</p>
-                </div>
-
                 <div class="checkbox-field">
                     <input type="checkbox" id="auto-redirect" name="auto-redirect">
                     <label for="auto-redirect">Automatically redirect to my game/tool choice next time</label>
+                </div>
+
+                <div id="game-grid" class="game-grid">
+                    <p class="game-grid-status">Loading games…</p>
                 </div>
             </section>
 
@@ -65,7 +65,7 @@
                     <h3 class="section-heading">Device Health</h3>
 
                     <div id="device-disconnected" class="device-disconnected">
-                        <p class="device-prompt">Connect your GB Link adapter to view device health and upgrade your adapter.</p>
+                        <p class="device-prompt">Connect your GB Link adapter to upgrade and configure your adapter.</p>
                         <button type="button" id="device-connect" class="btn btn-primary">
                             Connect
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -94,27 +94,76 @@
                             </div>
                         </div>
 
+                        <p id="device-serial-note" class="device-serial-note" hidden>
+                            Connected over WebSerial — firmware flashing is manual (download the
+                            <code>.uf2</code> and drag it onto the <strong>RPI-RP2</strong> drive). For
+                            one-click in-browser flashing, use a Chromium browser (Chrome/Edge).
+                        </p>
+
                         <div id="device-update" class="device-update" hidden>
                             <p class="device-update-text">
                                 <span class="device-update-heading">
-                                    <svg class="device-update-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <svg id="device-update-icon" class="device-update-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
                                         <line x1="12" y1="9" x2="12" y2="13"/>
                                         <line x1="12" y1="17" x2="12.01" y2="17"/>
                                     </svg>
-                                    Update available:
+                                    <span id="device-update-heading-text">Update available:</span>
                                     <span id="device-update-version" class="device-update-version"></span>
                                 </span>
                             </p>
-                            <a id="device-update-link" class="device-update-link" href="#" download>
-                                Download firmware (.uf2)
-                            </a>
-                            <ol class="device-update-steps">
-                                <li>Disconnect the adapter here, then unplug it from your computer.</li>
-                                <li>Hold <strong>BOOTSEL</strong> on the board, plug in USB, and release BOOTSEL. A drive named <strong>RPI-RP2</strong> should appear.</li>
-                                <li>Drag the downloaded <strong>.uf2</strong> file onto that drive. The board will reboot automatically.</li>
-                                <li>Plug the adapter back in and connect again to confirm the new firmware version.</li>
-                            </ol>
+
+                            <div id="device-update-version-row" class="device-update-version-row" hidden>
+                                <label for="device-update-version-select">Version to install</label>
+                                <select id="device-update-version-select" class="device-update-version-select"></select>
+                            </div>
+
+                            <button type="button" id="device-update-flash" class="btn btn-primary">
+                                Update firmware
+                            </button>
+
+                            <button type="button" id="device-update-select" class="btn btn-primary" hidden>
+                                Select adapter &amp; finish update
+                            </button>
+
+                            <button type="button" id="device-update-reconnect" class="btn btn-primary" hidden>Reconnect manually</button>
+
+                            <p id="device-update-status" class="device-update-status" hidden role="status" aria-live="polite"></p>
+
+                            <div id="device-update-progress" class="device-update-progress" hidden aria-hidden="true">
+                                <div class="device-update-progress-fill"></div>
+                            </div>
+
+                            <details id="device-update-fallback" class="device-update-fallback">
+                                <summary>Flash manually instead</summary>
+                                <a id="device-update-link" class="device-update-link" href="#" download>
+                                    Download firmware (.uf2)
+                                </a>
+                                <ol class="device-update-steps">
+                                    <li>Disconnect the adapter here, then unplug it from your computer.</li>
+                                    <li>Hold <strong>BOOTSEL</strong> on the board, plug in USB, and release BOOTSEL. A drive named <strong>RPI-RP2</strong> should appear.</li>
+                                    <li>Drag the downloaded <strong>.uf2</strong> file onto that drive. The board will reboot automatically.</li>
+                                    <li>Plug the adapter back in and connect again to confirm the new firmware version.</li>
+                                </ol>
+                            </details>
+                        </div>
+
+                        <details id="device-led" class="device-led" hidden>
+                            <summary class="device-led-heading">Status LED colors</summary>
+                            <div id="device-led-rows" class="device-led-rows"></div>
+                            <div class="device-led-actions">
+                                <button type="button" id="device-led-reset" class="device-led-reset">Reset to defaults</button>
+                                <button type="button" id="device-led-reboot" class="device-led-reset" title="Reboot the adapter so saved colors take effect now">Reboot to apply now</button>
+                            </div>
+                            <p id="device-led-reboot-note" class="device-landing-hint" hidden>Rebooting… the adapter will reconnect in a moment.</p>
+                        </details>
+
+                        <div id="device-landing" class="device-landing" hidden>
+                            <label class="device-landing-row">
+                                <input type="checkbox" id="device-landing-toggle">
+                                <span class="device-landing-text">Open the launcher automatically when this adapter is plugged in</span>
+                            </label>
+                            <p class="device-landing-hint">Takes effect the next time you reconnect the adapter.</p>
                         </div>
 
                         <button type="button" id="device-disconnect" class="btn btn-secondary">Disconnect</button>

@@ -1,0 +1,60 @@
+{
+  "gblink": [
+    {
+      "version": "2.1.2",
+      "uf2": "assets/firmware/gblink.v2.1.2.uf2"
+    },
+    {
+      "version": "2.1.1",
+      "uf2": "assets/firmware/gblink.v2.1.1.uf2"
+    },
+    {
+      "version": "2.0.4",
+      "uf2": "assets/firmware/gblink.v2.0.4.uf2"
+    },
+    {
+      "version": "2.0.3",
+      "uf2": "assets/firmware/gblink.v2.0.3.uf2"
+    },
+    {
+      "version": "2.0.2",
+      "uf2": "assets/firmware/gblink.v2.0.2.uf2"
+    },
+    {
+      "version": "2.0.1",
+      "uf2": "assets/firmware/gblink.v2.0.1.uf2"
+    },
+    {
+      "version": "1.0.7",
+      "uf2": "assets/firmware/gblink.v1.0.7.uf2"
+    },
+    {
+      "version": "1.0.6",
+      "uf2": "assets/firmware/gblink.v1.0.6.uf2"
+    },
+    {
+      "version": "1.0.5",
+      "uf2": "assets/firmware/gblink.v1.0.5.uf2"
+    },
+    {
+      "version": "1.0.4",
+      "uf2": "assets/firmware/gblink.v1.0.4.uf2"
+    },
+    {
+      "version": "1.0.3",
+      "uf2": "assets/firmware/gblink.v1.0.3.uf2"
+    },
+    {
+      "version": "1.0.2",
+      "uf2": "assets/firmware/gblink.v1.0.2.uf2"
+    },
+    {
+      "version": "1.0.1",
+      "uf2": "assets/firmware/gblink.v1.0.1.uf2"
+    },
+    {
+      "version": "1.0.0",
+      "uf2": "assets/firmware/gblink.v1.0.0.uf2"
+    }
+  ]
+}
