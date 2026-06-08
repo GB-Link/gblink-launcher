@@ -1,21 +1,21 @@
-# GB Link Launcher
+# GB-Link Launcher
 
-The official web launcher for **GB Link**, bringing the main tools and adapter checks together in one place.
+The official web launcher for **GB-Link**, bringing the main tools and adapter checks together in one place.
 
 Use it to:
-- quickly open supported GB Link web clients,
+- quickly open supported GB-Link web clients,
 - check adapter firmware health/version,
 - and grab firmware updates when available.
 
 ## Links
 
-- Demo: [launcher.gblink.io](https://launcher.gblink.io)
-- Original GB Link site: [gblink.io](https://gblink.io)
+- Hosted at: [launcher.gblink.io](https://launcher.gblink.io)
+- GB Link site: [gblink.io](https://gblink.io)
 - Firmware releases: [GBLink-Firmware releases](https://github.com/starlarkus/GBLink-Firmware/releases)
 
 ## What This Launcher Does
 
-- Loads GB Link-compatible web tools/games from `data/games.json` (kept up to date)
+- Loads GB-Link compatible web tools/games from `data/games.json` (kept up to date)
 - Detects connected GB Link adapters through WebUSB, with a WebSerial fallback (Firefox 151+)
 - Identifies known firmware families and versions
 - Flashes firmware updates **directly in the browser** over WebUSB — no download or
