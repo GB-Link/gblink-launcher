@@ -2,9 +2,9 @@
   {
     "name": "Pokémon Gen 3 Battle, Trade & Record Mixing",
     "description": "Online Trading, Battles, and Record Mixing. Works with original, unmodified hardware.",
-    "link": "https://celi0.link/",
+    "link": "https://celio.gblink.io/",
     "icon": "pokemon-icon",
-    "hover_description": "Requires latest firmware"
+    "hover_description": "Requires firmware 2.X"
   },
   {
     "name": "Tetris Online",
@@ -43,9 +43,9 @@
     "icon": "gba-icon"
   },
   {
-    "name": "GB Cart Reader",
-    "description": "Back up your Game Boy and Game Boy Color cartridges using a GBA. Dump ROMs and save files in your browser.",
-    "link": "https://gbadump.gblink.io",
+    "name": "GB Cart Doctor",
+    "description": "Back up and restore your Game Boy and Game Boy Color cartridges using a GBA. Dump ROMs and save files, or write a save back, all in your browser.",
+    "link": "https://cartdoctor.gblink.io",
     "icon": "cartdump-icon"
   }
 ]
