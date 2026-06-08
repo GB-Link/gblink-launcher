@@ -2,9 +2,9 @@
   {
     "name": "Pokémon Gen 3 Battle, Trade & Record Mixing",
     "description": "Online Trading, Battles, and Record Mixing. Works with original, unmodified hardware.",
-    "link": "https://celi0.link/",
+    "link": "https://celio.gblink.io/",
     "icon": "pokemon-icon",
-    "hover_description": "Requires latest firmware"
+    "hover_description": "Requires firmware 2.X"
   },
   {
     "name": "Tetris Online",
