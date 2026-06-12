@@ -1,50 +1,57 @@
 {
   "gblink": {
     "name": "GBLink-Firmware",
-    "repository": "https://github.com/starlarkus/GBLink-Firmware",
-    "latest": "2.1.2",
+    "repository": "https://github.com/GB-Link/GBLink-Firmware",
+    "latest": "2.2.0",
     "releases": [
+      {
+        "version": "2.2.0",
+        "tag": "v2.2.0",
+        "name": "Advance Wars 1/2 internet link play",
+        "published": "2026-06-12",
+        "uf2": "https://github.com/GB-Link/GBLink-Firmware/releases/download/v2.2.0/gblink.v2.2.0.uf2"
+      },
       {
         "version": "2.1.2",
         "tag": "v2.1.2",
         "name": "One-click in-browser updates (reboot-to-BOOTSEL)",
         "published": "2026-05-29",
-        "uf2": "https://github.com/starlarkus/GBLink-Firmware/releases/download/v2.1.2/gblink.v2.1.2.uf2"
+        "uf2": "https://github.com/GB-Link/GBLink-Firmware/releases/download/v2.1.2/gblink.v2.1.2.uf2"
       },
       {
         "version": "2.1.1",
         "tag": "v2.1.1",
         "name": "WebSerial Support",
         "published": "2026-05-27",
-        "uf2": "https://github.com/starlarkus/GBLink-Firmware/releases/download/v2.1.1/gblink.v2.1.1.uf2"
+        "uf2": "https://github.com/GB-Link/GBLink-Firmware/releases/download/v2.1.1/gblink.v2.1.1.uf2"
       },
       {
         "version": "2.0.4",
         "tag": "v2.0.4",
         "name": "Add GBC/GBA cable type detection",
         "published": "2026-04-08",
-        "uf2": "https://github.com/starlarkus/GBLink-Firmware/releases/download/v2.0.4/gblink.v2.0.4.uf2"
+        "uf2": "https://github.com/GB-Link/GBLink-Firmware/releases/download/v2.0.4/gblink.v2.0.4.uf2"
       },
       {
         "version": "2.0.3",
         "tag": "v2.0.3",
         "name": "GBA Passthrough mode",
         "published": "2026-03-28",
-        "uf2": "https://github.com/starlarkus/GBLink-Firmware/releases/download/v2.0.3/gblink.v2.0.3.uf2"
+        "uf2": "https://github.com/GB-Link/GBLink-Firmware/releases/download/v2.0.3/gblink.v2.0.3.uf2"
       },
       {
         "version": "2.0.2",
         "tag": "v2.0.2",
         "name": "Lower USB latency",
         "published": "2026-03-05",
-        "uf2": "https://github.com/starlarkus/GBLink-Firmware/releases/download/v2.0.2/gblink.v2.0.2.uf2"
+        "uf2": "https://github.com/GB-Link/GBLink-Firmware/releases/download/v2.0.2/gblink.v2.0.2.uf2"
       },
       {
         "version": "2.0.1",
         "tag": "v2.0.1",
         "name": "GBLink Unified Firmware",
         "published": "2026-03-04",
-        "uf2": "https://github.com/starlarkus/GBLink-Firmware/releases/download/v2.0.1/gblink.v2.0.1.uf2"
+        "uf2": "https://github.com/GB-Link/GBLink-Firmware/releases/download/v2.0.1/gblink.v2.0.1.uf2"
       }
     ]
   },

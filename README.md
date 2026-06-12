@@ -11,7 +11,7 @@ Use it to:
 
 - Hosted at: [launcher.gblink.io](https://launcher.gblink.io)
 - GB-Link site: [gblink.io](https://gblink.io)
-- Firmware releases: [GBLink-Firmware releases](https://github.com/starlarkus/GBLink-Firmware/releases)
+- Firmware releases: [GBLink-Firmware releases](https://github.com/GB-Link/GBLink-Firmware/releases)
 
 ## What This Launcher Does
 
