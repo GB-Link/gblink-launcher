@@ -38,6 +38,12 @@
     "icon": "yoshi-icon"
   },
   {
+    "name": "Pokémon Event Distribution",
+    "description": "Receive rare historical event Pokémon.",
+    "link": "https://distribution.gblink.io/",
+    "icon": "distribution-icon"
+  },
+  {
     "name": "Game Boy Printer",
     "description": "Print your Game Boy Camera photos to digital files.",
     "link": "https://printer.gblink.io",

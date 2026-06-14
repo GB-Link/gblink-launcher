@@ -312,6 +312,8 @@ main {
 .game-grid .cartdump-icon::after { width: 20px; height: 20px; }
 .game-grid .cartdump-icon::before { width: 12px; height: 6px; transform: translate(-50%, calc(-50% + 3px)); }
 .game-grid .advancewars-icon::after { width: 22px; height: 22px; }
+.game-grid .distribution-icon::after { width: 20px; height: 15px; transform: translate(-50%, -50%) translateY(2px); }
+.game-grid .distribution-icon::before { width: 5px; height: 5px; transform: translate(-50%, -50%) translate(-3px, -7px); box-shadow: 6px 0 0 #ec4899; }
 
 .pokemon-icon::after {
     content: '';
@@ -466,6 +468,35 @@ main {
     height: 30px;
     background: linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.75));
     clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.distribution-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) translateY(3px);
+    width: 26px;
+    height: 20px;
+    border-radius: 3px;
+    background:
+        linear-gradient(to right, transparent 43%, #ec4899 43%, #ec4899 57%, transparent 57%),
+        linear-gradient(to bottom, transparent 30%, #ec4899 30%, #ec4899 46%, transparent 46%),
+        #fff;
+}
+
+.distribution-icon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ec4899;
+    transform: translate(-50%, -50%) translate(-4px, -9px);
+    box-shadow: 8px 0 0 #ec4899;
+    z-index: 1;
 }
 
 .checkbox-field {
