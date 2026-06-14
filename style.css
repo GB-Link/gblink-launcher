@@ -311,6 +311,7 @@ main {
 .game-grid .yoshi-icon::before { width: 4px; height: 4px; transform: translate(-4px, -4px); box-shadow: 5px 1px 0 #a78bfa, -2px 5px 0 #ec4899; }
 .game-grid .cartdump-icon::after { width: 20px; height: 20px; }
 .game-grid .cartdump-icon::before { width: 12px; height: 6px; transform: translate(-50%, calc(-50% + 3px)); }
+.game-grid .advancewars-icon::after { width: 22px; height: 22px; }
 
 .pokemon-icon::after {
     content: '';
@@ -453,6 +454,18 @@ main {
     transform: translate(-50%, calc(-50% + 4px));
     border-radius: 1px;
     z-index: 1;
+}
+
+.advancewars-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.75));
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
 }
 
 .checkbox-field {
