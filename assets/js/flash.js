@@ -29,6 +29,7 @@ export function createFirmwareUpdater({
     versionEl,
     versionRowEl,
     versionSelectEl,
+    fileInputEl,
     flashBtn,
     selectBtn,
     statusEl,
@@ -52,6 +53,11 @@ export function createFirmwareUpdater({
     let usbConnectListener = null;
     let bootromDevice = null; // set when the connected device is already in BOOTSEL
     let reconnectTimer = null; // delays the post-flash manual Connect button
+    let customFirmware = null;
+    let lastBundledValue = '0';
+    let pickingCustom = false;
+
+    const CUSTOM_VALUE = 'custom';
 
     function versionList() {
         return target?.versions?.length
@@ -59,8 +65,16 @@ export function createFirmwareUpdater({
             : [{ version: target?.latest, uf2: target?.uf2 }];
     }
 
+    function usingCustom() {
+        return versionSelectEl?.value === CUSTOM_VALUE && Boolean(customFirmware);
+    }
+
     function inFlight() {
         return phase === 'downloading' || phase === 'awaiting-bootrom' || phase === 'flashing';
+    }
+
+    function isBusy() {
+        return inFlight() || pickingCustom;
     }
 
     function setStatus(text, kind) {
@@ -85,11 +99,57 @@ export function createFirmwareUpdater({
         usbConnectListener = null;
     }
 
+    function clearCustomFirmware() {
+        if (customFirmware?.blobUrl) {
+            try { URL.revokeObjectURL(customFirmware.blobUrl); } catch {}
+        }
+        customFirmware = null;
+        if (fileInputEl) fileInputEl.value = '';
+        updateCustomOptionLabel();
+    }
+
+    function updateCustomOptionLabel() {
+        const opt = versionSelectEl?.querySelector(`option[value="${CUSTOM_VALUE}"]`);
+        if (!opt) return;
+        opt.textContent = customFirmware
+            ? `Custom firmware: ${customFirmware.name}`
+            : 'Select custom firmware (uf2)';
+    }
+
+    function applyBundledSelection() {
+        const list = versionList();
+        const idx = Number(versionSelectEl?.value) || 0;
+        selected = list[idx] ?? list[0];
+        if (downloadLinkEl) {
+            downloadLinkEl.href = selected?.uf2 || '#';
+            downloadLinkEl.download = selected?.uf2 ? selected.uf2.split('/').pop() : '';
+        }
+        updateFlashLabel();
+    }
+
+    function applyCustomSelection() {
+        selected = { version: 'custom', uf2: null };
+        if (downloadLinkEl && customFirmware) {
+            downloadLinkEl.href = customFirmware.blobUrl;
+            downloadLinkEl.download = customFirmware.name;
+        }
+        if (containerEl) {
+            containerEl.classList.add('device-update--available');
+            containerEl.classList.remove('device-update--current');
+        }
+        if (iconEl) iconEl.toggleAttribute('hidden', true);
+        if (headingTextEl) headingTextEl.textContent = 'Install custom firmware:';
+        if (versionEl) versionEl.textContent = customFirmware?.name || '';
+        updateFlashLabel();
+    }
+
     // Label the flash button for the chosen version: latest reads as Update /
     // Reinstall; an older pick reads as an explicit Install.
     function updateFlashLabel() {
         if (!flashBtn || !target || !selected) return;
-        if (selected.version !== target.latest) {
+        if (usingCustom() || selected.version === 'custom') {
+            flashBtn.textContent = 'Install custom firmware';
+        } else if (selected.version !== target.latest) {
             flashBtn.textContent = `Install v${selected.version}`;
         } else if (bootromDevice) {
             flashBtn.textContent = 'Install firmware'; // board is already in BOOTSEL
@@ -98,52 +158,130 @@ export function createFirmwareUpdater({
         }
     }
 
-    // Reflect the currently-selected version in the download link + button label.
-    function onVersionChange() {
-        const list = versionList();
-        selected = list[Number(versionSelectEl?.value) || 0] ?? list[0];
-        if (downloadLinkEl) {
-            downloadLinkEl.href = selected.uf2 || '#';
-            downloadLinkEl.download = selected.uf2 ? selected.uf2.split('/').pop() : '';
+    async function pickCustomUf2() {
+        pickingCustom = true;
+        selected = { version: 'custom', uf2: null };
+        if (containerEl) {
+            containerEl.classList.add('device-update--available');
+            containerEl.classList.remove('device-update--current');
         }
+        if (iconEl) iconEl.toggleAttribute('hidden', true);
+        if (headingTextEl) headingTextEl.textContent = 'Install custom firmware:';
+        if (versionEl) versionEl.textContent = customFirmware?.name || '';
         updateFlashLabel();
-    }
 
-    // Fill the version <select> (newest-first), tagging the recommended default
-    // (newest 2.x = target.latest) and the build currently installed. Defaults
-    // the selection to the recommended one; only shown when >1 build is bundled.
-    function populateVersions() {
-        const list = versionList();
-        let defaultIndex = 0;
-        if (versionSelectEl) {
-            versionSelectEl.replaceChildren();
-            list.forEach((v, i) => {
-                const opt = document.createElement('option');
-                opt.value = String(i);
-                const tags = [];
-                if (v.version === target.latest) { tags.push('recommended'); defaultIndex = i; }
-                if (target.deviceVersion && v.version === target.deviceVersion) tags.push('installed');
-                opt.textContent = tags.length ? `v${v.version} (${tags.join(', ')})` : `v${v.version}`;
-                versionSelectEl.appendChild(opt);
+        try {
+            if (typeof window.showOpenFilePicker === 'function') {
+                try {
+                    const [handle] = await window.showOpenFilePicker({
+                        multiple: false,
+                        types: [{
+                            description: 'UF2 firmware',
+                            accept: { 'application/octet-stream': ['.uf2'] },
+                        }],
+                    });
+                    const file = await handle.getFile();
+                    const bytes = new Uint8Array(await file.arrayBuffer());
+                    if (customFirmware?.blobUrl) {
+                        try { URL.revokeObjectURL(customFirmware.blobUrl); } catch {}
+                    }
+                    customFirmware = {
+                        name: file.name || 'firmware.uf2',
+                        bytes,
+                        blobUrl: URL.createObjectURL(new Blob([bytes], { type: 'application/octet-stream' })),
+                    };
+                    if (versionSelectEl) versionSelectEl.value = CUSTOM_VALUE;
+                    updateCustomOptionLabel();
+                    applyCustomSelection();
+                    return true;
+                } catch (err) {
+                    if (err?.name !== 'AbortError') {
+                        console.error('Could not read custom UF2:', err);
+                        setStatus('Could not read that file. Pick another .uf2 or a bundled version.', 'error');
+                    }
+                    if (customFirmware) {
+                        if (versionSelectEl) versionSelectEl.value = CUSTOM_VALUE;
+                        updateCustomOptionLabel();
+                        applyCustomSelection();
+                        return true;
+                    }
+                    if (versionSelectEl) versionSelectEl.value = lastBundledValue;
+                    applyBundledSelection();
+                    if (target) renderIdleHeading();
+                    return false;
+                }
+            }
+
+            if (!fileInputEl) return false;
+
+            return await new Promise(resolve => {
+                let settled = false;
+                const finish = ok => {
+                    if (settled) return;
+                    settled = true;
+                    fileInputEl.removeEventListener('change', onFile);
+                    fileInputEl.removeEventListener('cancel', onCancel);
+                    resolve(ok);
+                };
+
+                const restoreIfEmpty = () => {
+                    if (customFirmware) {
+                        if (versionSelectEl) versionSelectEl.value = CUSTOM_VALUE;
+                        updateCustomOptionLabel();
+                        applyCustomSelection();
+                        finish(true);
+                        return;
+                    }
+                    if (versionSelectEl) versionSelectEl.value = lastBundledValue;
+                    applyBundledSelection();
+                    if (target) renderIdleHeading();
+                    finish(false);
+                };
+
+                const onCancel = () => restoreIfEmpty();
+
+                const onFile = async () => {
+                    const file = fileInputEl.files?.[0];
+                    if (!file) {
+                        restoreIfEmpty();
+                        return;
+                    }
+                    try {
+                        const bytes = new Uint8Array(await file.arrayBuffer());
+                        if (customFirmware?.blobUrl) {
+                            try { URL.revokeObjectURL(customFirmware.blobUrl); } catch {}
+                        }
+                        customFirmware = {
+                            name: file.name || 'firmware.uf2',
+                            bytes,
+                            blobUrl: URL.createObjectURL(new Blob([bytes], { type: 'application/octet-stream' })),
+                        };
+                        if (versionSelectEl) versionSelectEl.value = CUSTOM_VALUE;
+                        updateCustomOptionLabel();
+                        applyCustomSelection();
+                        finish(true);
+                    } catch (err) {
+                        console.error('Could not read custom UF2:', err);
+                        clearCustomFirmware();
+                        if (versionSelectEl) versionSelectEl.value = lastBundledValue;
+                        applyBundledSelection();
+                        if (target) renderIdleHeading();
+                        setStatus('Could not read that file. Pick another .uf2 or a bundled version.', 'error');
+                        finish(false);
+                    }
+                };
+
+                fileInputEl.value = '';
+                fileInputEl.addEventListener('change', onFile);
+                fileInputEl.addEventListener('cancel', onCancel);
+                fileInputEl.click();
             });
-            versionSelectEl.value = String(defaultIndex);
+        } finally {
+            pickingCustom = false;
         }
-        if (versionRowEl) versionRowEl.hidden = list.length <= 1;
-        onVersionChange();
     }
 
-    // Render the idle "firmware status" view for the current target: update
-    // available vs. up to date, a version picker, and a (re)flash button.
-    function renderIdle() {
-        removeConnectListener();
-        containerEl.hidden = false;
-        clearTimeout(reconnectTimer);
-        if (reconnectBtn) reconnectBtn.hidden = true;
-
-        if (versionEl) versionEl.textContent = `v${target.latest}`;
-
-        // A board already in BOOTSEL has no running firmware to compare against —
-        // present it as a direct flash rather than an update.
+    function renderIdleHeading() {
         const actionable = bootromDevice || target.updateAvailable;
         containerEl.classList.toggle('device-update--available', actionable);
         containerEl.classList.toggle('device-update--current', !actionable);
@@ -155,6 +293,72 @@ export function createFirmwareUpdater({
                 ? 'Bootloader mode — install:'
                 : target.updateAvailable ? 'Update available:' : 'Up to date — latest is';
         }
+        if (versionEl) versionEl.textContent = `v${target.latest}`;
+    }
+
+    // Reflect the currently-selected version in the download link + button label.
+    async function onVersionChange() {
+        const value = versionSelectEl?.value;
+        if (value === CUSTOM_VALUE) {
+            await pickCustomUf2();
+            return;
+        }
+        lastBundledValue = value ?? '0';
+        applyBundledSelection();
+        if (target) renderIdleHeading();
+    }
+
+    // Fill the version <select> (newest-first), tagging the recommended default
+    // (newest 2.x = target.latest) and the build currently installed. Defaults
+    // the selection to the recommended one.
+    function populateVersions() {
+        const list = versionList();
+        let defaultIndex = 0;
+        const keepCustom = Boolean(customFirmware) && selected?.version === 'custom';
+        if (versionSelectEl) {
+            versionSelectEl.replaceChildren();
+            list.forEach((v, i) => {
+                const opt = document.createElement('option');
+                opt.value = String(i);
+                const tags = [];
+                if (v.version === target.latest) { tags.push('recommended'); defaultIndex = i; }
+                if (target.deviceVersion && v.version === target.deviceVersion) tags.push('installed');
+                opt.textContent = tags.length ? `v${v.version} (${tags.join(', ')})` : `v${v.version}`;
+                versionSelectEl.appendChild(opt);
+            });
+            const customOpt = document.createElement('option');
+            customOpt.value = CUSTOM_VALUE;
+            customOpt.textContent = customFirmware
+                ? `Custom firmware: ${customFirmware.name}`
+                : 'Select custom firmware (uf2)';
+            versionSelectEl.appendChild(customOpt);
+            lastBundledValue = String(defaultIndex);
+            if (keepCustom) {
+                versionSelectEl.value = CUSTOM_VALUE;
+                applyCustomSelection();
+            } else {
+                versionSelectEl.value = String(defaultIndex);
+                applyBundledSelection();
+            }
+        } else if (keepCustom) {
+            applyCustomSelection();
+        } else {
+            applyBundledSelection();
+        }
+        if (versionRowEl) versionRowEl.hidden = false;
+    }
+
+    // Render the idle "firmware status" view for the current target: update
+    // available vs. up to date, a version picker, and a (re)flash button.
+    function renderIdle() {
+        removeConnectListener();
+        containerEl.hidden = false;
+        clearTimeout(reconnectTimer);
+        if (reconnectBtn) reconnectBtn.hidden = true;
+
+        // A board already in BOOTSEL has no running firmware to compare against —
+        // present it as a direct flash rather than an update.
+        renderIdleHeading();
 
         populateVersions(); // sets `selected`, download link, and button label
 
@@ -184,8 +388,17 @@ export function createFirmwareUpdater({
 
     async function startUpdate() {
         if (inFlight() || !target || !selected) return;
+
+        if (versionSelectEl?.value === CUSTOM_VALUE && !customFirmware) {
+            const ok = await pickCustomUf2();
+            if (!ok || !customFirmware) return;
+        }
+
         clearTimeout(reconnectTimer);
         if (reconnectBtn) reconnectBtn.hidden = true;
+
+        const custom = usingCustom();
+        const label = custom ? customFirmware.name : `v${selected.version}`;
 
         // WebSerial mode: no in-browser flashing. Optionally reboot the board to
         // BOOTSEL (≥2.1.2), then the user downloads the .uf2 and drags it on.
@@ -199,7 +412,7 @@ export function createFirmwareUpdater({
                 try {
                     await serialSend(new Uint8Array([REBOOT_BOOTLOADER_CMD]));
                 } catch {}
-                setStatus(`Adapter is rebooting into update mode. Download v${selected.version} below and drag it onto the RPI-RP2 drive, then reconnect.`, 'ok');
+                setStatus(`Adapter is rebooting into update mode. Download ${label} below and drag it onto the RPI-RP2 drive, then reconnect.`, 'ok');
             } else {
                 setStatus('Hold BOOTSEL on the adapter and replug it, then download below and drag the .uf2 onto the RPI-RP2 drive, then reconnect.');
             }
@@ -210,13 +423,18 @@ export function createFirmwareUpdater({
         phase = 'downloading';
         if (flashBtn) flashBtn.disabled = true;
         if (versionSelectEl) versionSelectEl.disabled = true;
-        setStatus(`Downloading firmware v${selected.version}…`);
+        setStatus(custom ? 'Preparing custom firmware…' : `Downloading firmware ${label}…`);
         showProgress(true);
 
         try {
-            const res = await fetch(selected.uf2);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const bytes = new Uint8Array(await res.arrayBuffer());
+            let bytes;
+            if (custom) {
+                bytes = customFirmware.bytes;
+            } else {
+                const res = await fetch(selected.uf2);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                bytes = new Uint8Array(await res.arrayBuffer());
+            }
             firmware = uf2ToFlashBuffer(bytes);
         } catch (err) {
             phase = 'error';
@@ -224,7 +442,14 @@ export function createFirmwareUpdater({
             showProgress(false);
             if (flashBtn) flashBtn.disabled = false;
             if (versionSelectEl) versionSelectEl.disabled = false;
-            setStatus('Could not download the firmware. Use “Flash manually instead” below.', 'error');
+            if (custom) {
+                clearCustomFirmware();
+                if (versionSelectEl) versionSelectEl.value = lastBundledValue;
+                applyBundledSelection();
+                setStatus('Could not parse that .uf2. Pick another file or a bundled version.', 'error');
+            } else {
+                setStatus('Could not download the firmware. Use “Flash manually instead” below.', 'error');
+            }
             if (fallbackEl) fallbackEl.open = true;
             return;
         }
@@ -239,10 +464,41 @@ export function createFirmwareUpdater({
             return;
         }
 
+        if (!device && !serialSend) {
+            phase = 'error';
+            showProgress(false);
+            if (flashBtn) {
+                flashBtn.hidden = false;
+                flashBtn.disabled = false;
+            }
+            if (versionSelectEl) versionSelectEl.disabled = false;
+            setStatus('Adapter disconnected. Reconnect it, then click Install again.', 'error');
+            return;
+        }
+
+        armBootromAcquire();
+
         // Otherwise get the running adapter into BOOTSEL mode. Firmware ≥ v2.1.2
         // can reboot itself there; older firmware needs a physical BOOTSEL press.
         if (supportsOneClick(family, version) && device) {
             setStatus('Adapter is rebooting into update mode… Click “Select adapter” to continue.');
+            if (!device.opened) {
+                try {
+                    await device.open();
+                } catch {
+                    phase = 'error';
+                    showProgress(false);
+                    if (flashBtn) {
+                        flashBtn.hidden = false;
+                        flashBtn.disabled = false;
+                    }
+                    if (versionSelectEl) versionSelectEl.disabled = false;
+                    if (selectBtn) selectBtn.hidden = true;
+                    removeConnectListener();
+                    setStatus('Adapter disconnected. Reconnect it, then click Install again.', 'error');
+                    return;
+                }
+            }
             try {
                 await device.transferOut(cmdEpOut, new Uint8Array([REBOOT_BOOTLOADER_CMD]));
             } catch {
@@ -254,8 +510,6 @@ export function createFirmwareUpdater({
         } else {
             setStatus('Hold the BOOTSEL button on the adapter, plug it back in, then click “Select adapter”.');
         }
-
-        armBootromAcquire();
     }
 
     function armBootromAcquire() {
@@ -439,10 +693,10 @@ export function createFirmwareUpdater({
             // "Select adapter" chooser.
             await forgetAllBootromGrants();
 
-            lastFlashedTo = selected.version;
+            lastFlashedTo = usingCustom() ? customFirmware.name : `v${selected.version}`;
             phase = 'done';
             showProgress(false);
-            setStatus(`✓ Firmware v${selected.version} installed. Attempting auto reconnect…`, 'ok');
+            setStatus(`✓ Firmware ${lastFlashedTo} installed. Attempting auto reconnect…`, 'ok');
             // The board usually re-enumerates and auto-reconnects within a moment.
             // But crossing firmware families (e.g. 1.x↔2.x) changes the USB identity,
             // so the page has no permission for the new device and auto-reconnect
@@ -494,7 +748,7 @@ export function createFirmwareUpdater({
 
         // Confirm a just-completed flash now that the board is back.
         if (lastFlashedTo) {
-            setStatus(`✓ Firmware v${lastFlashedTo} installed.`, 'ok');
+            setStatus(`✓ Firmware ${lastFlashedTo} installed.`, 'ok');
             lastFlashedTo = null;
         }
     }
@@ -504,13 +758,15 @@ export function createFirmwareUpdater({
     function onDeviceGone() {
         device = null;
         cmdEpOut = null;
-        if (inFlight()) return false; // tell the caller not to tear down the panel
+        if (isBusy()) return false;
         return true;
     }
 
     if (flashBtn) flashBtn.addEventListener('click', () => startUpdate());
     if (selectBtn) selectBtn.addEventListener('click', () => onSelectClick());
-    if (versionSelectEl) versionSelectEl.addEventListener('change', () => onVersionChange());
+    if (versionSelectEl) {
+        versionSelectEl.addEventListener('change', () => { void onVersionChange(); });
+    }
 
-    return { onDeviceReady, onDeviceGone, isUpdating: inFlight };
+    return { onDeviceReady, onDeviceGone, isUpdating: isBusy };
 }

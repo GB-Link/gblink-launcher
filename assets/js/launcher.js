@@ -1209,6 +1209,7 @@ function initDeviceHealthPanel() {
         versionEl: document.getElementById('device-update-version'),
         versionRowEl: document.getElementById('device-update-version-row'),
         versionSelectEl: document.getElementById('device-update-version-select'),
+        fileInputEl: document.getElementById('device-update-uf2-file'),
         flashBtn: document.getElementById('device-update-flash'),
         selectBtn: document.getElementById('device-update-select'),
         statusEl: document.getElementById('device-update-status'),
