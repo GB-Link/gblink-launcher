@@ -2,8 +2,15 @@
   "gblink": {
     "name": "GBLink-Firmware",
     "repository": "https://github.com/GB-Link/GBLink-Firmware",
-    "latest": "2.2.1",
+    "latest": "2.2.2",
     "releases": [
+      {
+        "version": "2.2.2",
+        "tag": "v2.2.2",
+        "name": "e-Reader emulation",
+        "published": "2026-07-21",
+        "uf2": "https://github.com/GB-Link/GBLink-Firmware/releases/download/v2.2.2/gblink.v2.2.2.uf2"
+      },
       {
         "version": "2.2.1",
         "tag": "v2.2.1",
