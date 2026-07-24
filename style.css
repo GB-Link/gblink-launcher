@@ -314,6 +314,7 @@ main {
 .game-grid .advancewars-icon::after { width: 22px; height: 22px; }
 .game-grid .distribution-icon::after { width: 20px; height: 15px; transform: translate(-50%, -50%) translateY(2px); }
 .game-grid .distribution-icon::before { width: 5px; height: 5px; transform: translate(-50%, -50%) translate(-3px, -7px); box-shadow: 6px 0 0 #ec4899; }
+.game-grid .ereader-icon::after { width: 22px; height: 15px; }
 
 .pokemon-icon::after {
     content: '';
@@ -496,6 +497,37 @@ main {
     background: #ec4899;
     transform: translate(-50%, -50%) translate(-4px, -9px);
     box-shadow: 8px 0 0 #ec4899;
+    z-index: 1;
+}
+
+/* e-Reader: dotcode scan card */
+.ereader-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 28px;
+    height: 20px;
+    background: white;
+    border-radius: 3px;
+}
+
+.ereader-icon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1.2px;
+    height: 1.2px;
+    border-radius: 50%;
+    background: var(--bg-dark);
+    transform: translate(-50%, -50%) translateY(1px);
+    box-shadow:
+        -9px 0 0 var(--bg-dark), -6px 0 0 var(--bg-dark), -3px 0 0 var(--bg-dark), 3px 0 0 var(--bg-dark), 6px 0 0 var(--bg-dark), 9px 0 0 var(--bg-dark),
+        -7.5px 2px 0 var(--bg-dark), -4.5px 2px 0 var(--bg-dark), -1.5px 2px 0 var(--bg-dark), 1.5px 2px 0 var(--bg-dark), 4.5px 2px 0 var(--bg-dark), 7.5px 2px 0 var(--bg-dark),
+        -9px 4px 0 var(--bg-dark), -6px 4px 0 var(--bg-dark), -3px 4px 0 var(--bg-dark), 0 4px 0 var(--bg-dark), 3px 4px 0 var(--bg-dark), 6px 4px 0 var(--bg-dark), 9px 4px 0 var(--bg-dark),
+        -7.5px 6px 0 var(--bg-dark), -4.5px 6px 0 var(--bg-dark), -1.5px 6px 0 var(--bg-dark), 1.5px 6px 0 var(--bg-dark), 4.5px 6px 0 var(--bg-dark), 7.5px 6px 0 var(--bg-dark);
     z-index: 1;
 }
 

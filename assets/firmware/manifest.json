@@ -1,6 +1,10 @@
 {
   "gblink": [
     {
+      "version": "2.2.2",
+      "uf2": "assets/firmware/gblink.v2.2.2.uf2"
+    },
+    {
       "version": "2.2.1",
       "uf2": "assets/firmware/gblink.v2.2.1.uf2"
     },

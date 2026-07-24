@@ -4,7 +4,7 @@
     "description": "Online Trading, Battles, and Record Mixing. Works with original, unmodified hardware.",
     "link": "https://celio.gblink.io/",
     "icon": "pokemon-icon",
-    "hover_description": "Requires firmware 2.X"
+    "hover_description": "Requires firmware 2.0+"
   },
   {
     "name": "Advance Wars",
@@ -60,5 +60,12 @@
     "description": "Back up and restore your Game Boy and Game Boy Color cartridges using a GBA. Dump ROMs and save files, or write a save back, all in your browser.",
     "link": "https://cartdoctor.gblink.io",
     "icon": "cartdump-icon"
+  },
+  {
+    "name": "eReader",
+    "description": "Emulate eReader and send dotcode cards to your GBA",
+    "link": "https://ereader.gblink.io/",
+    "icon": "ereader-icon",
+    "hover_description": "Requires firmware 2.2.2+"
   }
 ]
