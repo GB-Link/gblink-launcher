@@ -57,7 +57,7 @@
   },
   {
     "name": "GB Cart Doctor",
-    "description": "Back up and restore your Game Boy and Game Boy Color cartridges using a GBA. Dump ROMs and save files, or write a save back, all in your browser.",
+    "description": "Back up and restore your Game Boy, Game Boy Color, and Game Boy Advance cartridges using a GBA.",
     "link": "https://cartdoctor.gblink.io",
     "icon": "cartdump-icon"
   },
