@@ -16,6 +16,7 @@ Use it to:
 ## What This Launcher Does
 
 - Loads GB-Link compatible web tools/games from `data/games.json` (kept up to date)
+- Lists the desktop (non-browser) clients from `data/desktop.json` below the web clients
 - Detects connected GB-Link adapters through WebUSB, with a WebSerial fallback (Firefox 151+)
 - Identifies known firmware families and versions
 - Flashes firmware updates **directly in the browser** over WebUSB — no download or
@@ -65,6 +66,7 @@ http://localhost:8080
 - `assets/firmware/` - bundled firmware `.uf2` files + generated `manifest.json`
 - `scripts/gen-firmware-manifest.mjs` - regenerates the firmware manifest from the folder
 - `data/games.json` - launcher destinations (updated list)
+- `data/desktop.json` - desktop clients, linked out to their download pages
 - `data/firmware.json` - firmware catalog and update metadata (latest known releases)
 
 ## Releasing new firmware

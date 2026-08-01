@@ -315,6 +315,12 @@ main {
 .game-grid .distribution-icon::after { width: 20px; height: 15px; transform: translate(-50%, -50%) translateY(2px); }
 .game-grid .distribution-icon::before { width: 5px; height: 5px; transform: translate(-50%, -50%) translate(-3px, -7px); box-shadow: 6px 0 0 #ec4899; }
 .game-grid .ereader-icon::after { width: 22px; height: 15px; }
+.game-grid .mmo-icon::after { width: 20px; height: 10px; border-radius: 10px 10px 2px 2px; transform: translate(-50%, -50%) translateY(6px); }
+.game-grid .mmo-icon::before { width: 9px; height: 9px; transform: translate(-50%, -50%) translateY(-5px); box-shadow: -9px 4px 0 -1.5px #a78bfa, 9px 4px 0 -1.5px #ec4899; }
+.game-grid .netplay-icon::before { width: 17px; height: 12px; border-width: 1.5px; transform: translate(-50%, -50%) translate(-5px, -2px); }
+.game-grid .netplay-icon::after { width: 8px; height: 13px; transform: translate(-50%, -50%) translate(8px, 2px); box-shadow: -5px -2px 0 -3px white, -3.5px -2px 0 -3px white, -2px -2px 0 -3px white; }
+.game-grid .terminal-icon::before { width: 20px; height: 15px; border-width: 1.5px; }
+.game-grid .terminal-icon::after { font-size: 9px; }
 
 .pokemon-icon::after {
     content: '';
@@ -531,6 +537,85 @@ main {
     z-index: 1;
 }
 
+/* GBA MMO: a party of players */
+.mmo-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) translateY(7px);
+    width: 26px;
+    height: 13px;
+    border-radius: 13px 13px 3px 3px;
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.75));
+}
+
+.mmo-icon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #fff;
+    transform: translate(-50%, -50%) translateY(-6px);
+    box-shadow: -12px 5px 0 -2px #a78bfa, 12px 5px 0 -2px #ec4899;
+    z-index: 1;
+}
+
+/* Netplay bridge: a monitor linked to a handheld */
+.netplay-icon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 22px;
+    height: 16px;
+    border: 2px solid white;
+    border-radius: 2px;
+    transform: translate(-50%, -50%) translate(-6px, -2px);
+}
+
+.netplay-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 11px;
+    height: 18px;
+    background: white;
+    border-radius: 2px 2px 3px 3px;
+    transform: translate(-50%, -50%) translate(11px, 3px);
+    box-shadow: -7px -3px 0 -4px white, -5px -3px 0 -4px white, -3px -3px 0 -4px white;
+}
+
+/* Command-line client: a terminal prompt */
+.terminal-icon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 26px;
+    height: 20px;
+    border: 2px solid white;
+    border-radius: 3px;
+    transform: translate(-50%, -50%);
+}
+
+.terminal-icon::after {
+    content: '>';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) translateX(-3px);
+    color: white;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+}
+
 .checkbox-field {
     display: flex;
     align-items: center;
@@ -590,17 +675,58 @@ main {
     border-color: rgba(255, 255, 255, 0.3);
 }
 
+/* Sits above the game grid, so it stays a slim bar: the heading and connect
+   prompt share a row, and the connected details wrap onto their own. */
+.device-section {
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.device-panel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 18px;
+    padding: 14px 20px;
+    border-radius: 16px;
+}
+
+.device-panel .section-heading {
+    flex: 0 0 auto;
+    font-size: 1rem;
+    margin-bottom: 0;
+}
+
 .device-disconnected {
-    text-align: center;
-    padding: 0;
+    flex: 1 1 340px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px 14px;
+}
+
+.device-disconnected[hidden] {
+    display: none;
+}
+
+.device-connected {
+    flex: 1 1 100%;
 }
 
 .device-prompt {
     color: var(--text-muted);
-    font-size: 0.95rem;
-    line-height: 1.5;
-    margin: 0 auto 16px;
-    max-width: 420px;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    margin: 0;
+    flex: 1 1 220px;
+}
+
+.device-disconnected .btn {
+    flex: 0 0 auto;
+    padding: 9px 18px;
+    font-size: 0.9rem;
 }
 
 .device-connected .info-grid {

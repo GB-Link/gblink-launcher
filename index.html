@@ -49,19 +49,8 @@
         </section>
 
         <div class="container container-wide">
-            <section class="games-section">
-                <div class="checkbox-field">
-                    <input type="checkbox" id="auto-redirect" name="auto-redirect">
-                    <label for="auto-redirect">Automatically redirect to my game/tool choice next time</label>
-                </div>
-
-                <div id="game-grid" class="game-grid">
-                    <p class="game-grid-status">Loading games…</p>
-                </div>
-            </section>
-
             <section class="panel-section device-section">
-                <div class="glass-panel">
+                <div class="glass-panel device-panel">
                     <h3 class="section-heading">Device Health</h3>
 
                     <div id="device-disconnected" class="device-disconnected">
@@ -169,6 +158,25 @@
 
                         <button type="button" id="device-disconnect" class="btn btn-secondary">Disconnect</button>
                     </div>
+                </div>
+            </section>
+
+            <section class="games-section">
+                <div class="checkbox-field">
+                    <input type="checkbox" id="auto-redirect" name="auto-redirect">
+                    <label for="auto-redirect">Automatically redirect to my game/tool choice next time</label>
+                </div>
+
+                <h3 class="section-heading">USB Web Clients</h3>
+                <div id="game-grid" class="game-grid">
+                    <p class="game-grid-status">Loading games…</p>
+                </div>
+            </section>
+
+            <section class="games-section">
+                <h3 class="section-heading">Desktop Clients</h3>
+                <div id="desktop-grid" class="game-grid">
+                    <p class="game-grid-status">Loading desktop clients…</p>
                 </div>
             </section>
         </div>

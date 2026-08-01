@@ -67,5 +67,12 @@
     "link": "https://ereader.gblink.io/",
     "icon": "ereader-icon",
     "hover_description": "Requires firmware 2.2.2+"
+  },
+  {
+    "name": "GBA MMO",
+    "description": "Homebrew MMO tech demo. Explore a shared world and level up skills.",
+    "link": "https://gbammo.gblink.io/",
+    "icon": "mmo-icon",
+    "hover_description": "Requires a GBC link cable"
   }
 ]

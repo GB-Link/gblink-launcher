@@ -1305,6 +1305,7 @@ function initBrowserInfo() {
 
 function initLauncher() {
     const gameGrid = document.getElementById('game-grid');
+    const desktopGrid = document.getElementById('desktop-grid');
     const autoRedirectCheckbox = document.getElementById('auto-redirect');
     const redirectOverlay = document.getElementById('redirect-overlay');
     const redirectIcon = document.getElementById('redirect-icon');
@@ -1386,10 +1387,17 @@ function initLauncher() {
         }, 1000);
     }
 
-    function createGameCard(game) {
+    // External cards (desktop clients) link straight out to their download page —
+    // no launcher query, and they are not auto-redirect targets.
+    function createGameCard(game, { external = false } = {}) {
         const card = document.createElement('a');
         card.className = 'card glass-panel';
-        card.href = withLauncherQuery(game.link);
+        card.href = external ? game.link : withLauncherQuery(game.link);
+
+        if (external) {
+            card.target = '_blank';
+            card.rel = 'noopener noreferrer';
+        }
 
         const icon = document.createElement('div');
         icon.className = `card-icon ${game.icon || ''}`;
@@ -1418,7 +1426,10 @@ function initLauncher() {
             card.append(hoverDescription);
         }
 
-        card.addEventListener('click', () => onGameClick(game.link));
+        if (!external) {
+            card.addEventListener('click', () => onGameClick(game.link));
+        }
+
         return card;
     }
 
@@ -1443,6 +1454,14 @@ function initLauncher() {
         localStorage.removeItem(STORAGE_KEY_AUTO_REDIRECT);
     }
 
+    function populateDesktopClients(clients) {
+        desktopGrid.replaceChildren();
+
+        for (const client of clients) {
+            desktopGrid.appendChild(createGameCard(client, { external: true }));
+        }
+    }
+
     fetch('data/games.json')
         .then(response => {
             if (!response.ok) {
@@ -1454,6 +1473,20 @@ function initLauncher() {
         .catch(() => {
             gameGrid.innerHTML = '<p class="game-grid-status">Could not load games</p>';
         });
+
+    if (desktopGrid) {
+        fetch('data/desktop.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Failed to load desktop clients (${response.status})`);
+                }
+                return response.json();
+            })
+            .then(populateDesktopClients)
+            .catch(() => {
+                desktopGrid.innerHTML = '<p class="game-grid-status">Could not load desktop clients</p>';
+            });
+    }
 
     autoRedirectCheckbox.addEventListener('change', () => {
         saveAutoRedirectPreference(autoRedirectCheckbox.checked);

@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Pokémon Gen 3 RetroArch Netplay",
+    "description": "Trade and battle against emulator players over RetroArch netplay, from a real GBA. Windows, macOS, and Linux.",
+    "link": "https://github.com/GB-Link/gblink-netplay-bridge/releases",
+    "icon": "netplay-icon"
+  },
+  {
+    "name": "Pokémon Trading (Command Line)",
+    "description": "Trade Gen 1-3 Pokémon online from a terminal. Works with original hardware over the adapter, or with an emulator.",
+    "link": "https://github.com/Lorenzooone/PokemonGB_Online_Trades",
+    "icon": "terminal-icon"
+  }
+]
