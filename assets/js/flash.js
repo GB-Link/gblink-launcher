@@ -38,6 +38,7 @@ export function createFirmwareUpdater({
     downloadLinkEl,
     reconnectBtn,
     supportsOneClick,
+    onFlashed,
 }) {
     // phase: idle | downloading | awaiting-bootrom | flashing | done | error
     let phase = 'idle';
@@ -49,6 +50,7 @@ export function createFirmwareUpdater({
     let selected = null; // chosen { version, uf2 } to flash (defaults to latest)
     let firmware = null; // { address, data } parsed from the .uf2
     let lastFlashedTo = null;
+    let updatedFrom = null; // firmware version the current/last update started from
     let serialSend = null; // set in WebSerial mode — flashing is manual there (no PICOBOOT)
     let usbConnectListener = null;
     let bootromDevice = null; // set when the connected device is already in BOOTSEL
@@ -394,6 +396,9 @@ export function createFirmwareUpdater({
             if (!ok || !customFirmware) return;
         }
 
+        // Consumed by the health panel's post-flash cable migration.
+        updatedFrom = version;
+
         clearTimeout(reconnectTimer);
         if (reconnectBtn) reconnectBtn.hidden = true;
 
@@ -617,7 +622,10 @@ export function createFirmwareUpdater({
             await new Promise(resolve => setTimeout(resolve, 400));
         }
 
-        reArmManualSelect('Couldn’t open the adapter — unplug it, re-enter BOOTSEL, then click “Select adapter”.');
+        // Full message, bypassing reArmManualSelect's "Click Select adapter"
+        // suffix — the advice here already covers the retry options.
+        reArmManualSelect();
+        setStatus('Couldn’t open the adapter — if the chooser lists several “RP2 Boot” entries, pick a different one; otherwise restart Chrome or flash manually below.', 'error');
     }
 
     // Fully release a Picoboot device. picoboot.disconnect() only closes when a
@@ -693,6 +701,12 @@ export function createFirmwareUpdater({
             // "Select adapter" chooser.
             await forgetAllBootromGrants();
 
+            // A board that was connected while already in BOOTSEL never fires a
+            // disconnect event (its grant was just forgotten) — the health panel
+            // must drop it now or the stale device blocks reconnecting.
+            bootromDevice = null;
+            onFlashed?.();
+
             lastFlashedTo = usingCustom() ? customFirmware.name : `v${selected.version}`;
             phase = 'done';
             showProgress(false);
@@ -762,11 +776,18 @@ export function createFirmwareUpdater({
         return true;
     }
 
+    // One-shot: read on every (re)connect, so an aborted update's value clears too.
+    function consumeUpdatedFrom() {
+        const from = updatedFrom;
+        updatedFrom = null;
+        return from;
+    }
+
     if (flashBtn) flashBtn.addEventListener('click', () => startUpdate());
     if (selectBtn) selectBtn.addEventListener('click', () => onSelectClick());
     if (versionSelectEl) {
         versionSelectEl.addEventListener('change', () => { void onVersionChange(); });
     }
 
-    return { onDeviceReady, onDeviceGone, isUpdating: isBusy };
+    return { onDeviceReady, onDeviceGone, isUpdating: isBusy, consumeUpdatedFrom };
 }
