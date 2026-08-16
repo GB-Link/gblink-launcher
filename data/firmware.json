@@ -12,6 +12,13 @@
         "uf2": "https://github.com/GB-Link/GBLink-Firmware/releases/download/v2.2.3/gblink.v2.2.3.uf2"
       },
       {
+        "version": "2.2.2",
+        "tag": "v2.2.2",
+        "name": "e-Reader emulation",
+        "published": "2026-07-24",
+        "uf2": "https://github.com/GB-Link/GBLink-Firmware/releases/download/v2.2.2/gblink.v2.2.2.uf2"
+      },
+      {
         "version": "2.2.1",
         "tag": "v2.2.1",
         "name": "Windows WebUSB (WinUSB) fix",
