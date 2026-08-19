@@ -783,11 +783,17 @@ export function createFirmwareUpdater({
         return from;
     }
 
+    // True between a successful flash and the board's reconnect — the only
+    // window in which the health panel may auto-grab a (re)appearing adapter.
+    function isAwaitingReconnect() {
+        return phase === 'done';
+    }
+
     if (flashBtn) flashBtn.addEventListener('click', () => startUpdate());
     if (selectBtn) selectBtn.addEventListener('click', () => onSelectClick());
     if (versionSelectEl) {
         versionSelectEl.addEventListener('change', () => { void onVersionChange(); });
     }
 
-    return { onDeviceReady, onDeviceGone, isUpdating: isBusy, consumeUpdatedFrom };
+    return { onDeviceReady, onDeviceGone, isUpdating: isBusy, consumeUpdatedFrom, isAwaitingReconnect };
 }
