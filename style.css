@@ -675,14 +675,8 @@ main {
     border-color: rgba(255, 255, 255, 0.3);
 }
 
-/* Sits above the game grid, so it stays a slim bar: the heading and connect
-   prompt share a row, and the connected details wrap onto their own. */
-.device-section {
-    max-width: 680px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
+/* Slim bar: the heading and connect prompt share a row; the connected
+   details wrap onto their own. */
 .device-panel {
     display: flex;
     flex-wrap: wrap;
@@ -838,6 +832,53 @@ main {
 
 .device-serial-note code {
     color: var(--text-main);
+}
+
+.device-cable {
+    margin-bottom: 14px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-panel);
+}
+
+.device-cable[hidden] {
+    display: none;
+}
+
+.device-cable-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    line-height: 1.4;
+}
+
+.device-cable-text {
+    flex: 1;
+}
+
+.device-cable-select {
+    padding: 6px 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-main);
+    font: inherit;
+}
+
+/* Opaque background for the OS-rendered option popup (same reason as the
+   update version select). */
+.device-cable-select option {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+}
+
+.device-cable-hint {
+    margin: 6px 0 0;
+    font-size: 0.8rem;
+    color: var(--text-muted);
 }
 
 .device-landing {

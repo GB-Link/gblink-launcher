@@ -54,7 +54,7 @@
                     <h3 class="section-heading">Device Health</h3>
 
                     <div id="device-disconnected" class="device-disconnected">
-                        <p class="device-prompt">Connect your GB-Link adapter to upgrade and configure your adapter.</p>
+                        <p class="device-prompt">Connect to upgrade and configure your GB-Link adapter.</p>
                         <button type="button" id="device-connect" class="btn btn-primary">
                             Connect
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -138,14 +138,24 @@
                             </details>
                         </div>
 
+                        <div id="device-cable" class="device-cable" hidden>
+                            <label class="device-cable-row">
+                                <span class="device-cable-text">Link cable for GBA modes</span>
+                                <select id="device-cable-select" class="device-cable-select">
+                                    <option value="2">GBC cable (default)</option>
+                                    <option value="1">GBA cable</option>
+                                    <option value="0">Auto detect</option>
+                                </select>
+                            </label>
+                            <p class="device-cable-hint">Cable type used for GBA games. (GB games always use GBC cable)</p>
+                        </div>
+
                         <details id="device-led" class="device-led" hidden>
                             <summary class="device-led-heading">Status LED colors</summary>
                             <div id="device-led-rows" class="device-led-rows"></div>
                             <div class="device-led-actions">
                                 <button type="button" id="device-led-reset" class="device-led-reset">Reset to defaults</button>
-                                <button type="button" id="device-led-reboot" class="device-led-reset" title="Reboot the adapter so saved colors take effect now">Reboot to apply now</button>
                             </div>
-                            <p id="device-led-reboot-note" class="device-landing-hint" hidden>Rebooting… the adapter will reconnect in a moment.</p>
                         </details>
 
                         <div id="device-landing" class="device-landing" hidden>
@@ -204,7 +214,7 @@
     </section>
 
     <footer class="site-footer">
-        <p>Project by <a href="https://github.com/starlarkus" target="_blank" rel="noopener noreferrer">Starlark</a> and <a href="https://github.com/raphaelz" target="_blank" rel="noopener noreferrer">raphaelz</a></p>
+        <p>Launcher by <a href="https://github.com/starlarkus" target="_blank" rel="noopener noreferrer">Starlark</a> and <a href="https://github.com/raphaelz" target="_blank" rel="noopener noreferrer">Raf</a></p>
     </footer>
 
     <script type="module" src="assets/js/launcher.js"></script>

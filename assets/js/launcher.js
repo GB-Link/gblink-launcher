@@ -32,11 +32,18 @@ const GBL_CMD_SET_WEBUSB_LANDING = 0x44;
 const GBL_CMD_GET_LED_CONFIG = 0x45;
 const GBL_CMD_SET_MODE_LED = 0x46;
 const GBL_CMD_RESET_LED = 0x47;
-const GBL_CMD_REBOOT = 0x48;      // warm-reboot into the app (apply saved settings)
+const GBL_CMD_SET_CABLE_SELECTION = 0x4b; // persist the cable/SD-pin selection
+
+// Cable selection values (firmware + <select> options): 0 auto, 1 GBA, 2 GBC.
+const GBL_CABLE_AUTO = 0;
+
+// First firmware with the persisted cable selection (0x4b / info byte 5);
+// updates crossing this version migrate the device to "auto" once.
+const GBLINK_CABLE_SELECTION_MIN_VERSION = '2.2.3';
 
 // Per-mode LED slot labels, in the fixed order the firmware reports them.
 const LED_SLOT_LABELS = {
-    gblink: ['Idle / connected', 'Celio / GBA', 'GB / GBC', 'Printer', 'Advance Wars'],
+    gblink: ['Idle / connected', 'Celio / GBA', 'GB / GBC', 'Printer', 'Advance Wars', 'e-Reader'],
     'reconfigurable-starlarkus': ['Connected', 'Active / link', 'Printer'],
 };
 const WEBUSB_VENDOR_REQUEST = 0x01;
@@ -401,11 +408,6 @@ async function resetReconfigurableLed(device, iface) {
     await device.transferOut(iface.dataEpOut, reconfigurableLedPacket('LEDR', []));
 }
 
-async function rebootReconfigurable(device, iface) {
-    await enableTinyUsbWebSerial(device, iface.interfaceNumber);
-    await device.transferOut(iface.dataEpOut, reconfigurableLedPacket('BOOT', []));
-}
-
 async function queryGblinkFirmwareVersion(device, iface) {
     await device.transferOut(iface.cmdEpOut, new Uint8Array([GBL_CMD_GET_FIRMWARE_INFO]));
 
@@ -418,6 +420,8 @@ async function queryGblinkFirmwareVersion(device, iface) {
             // Byte 4 (firmware ≥ v2.1.2): WebUSB landing-page enabled. null when
             // the firmware predates it, so the toggle stays hidden.
             landingEnabled: data.length >= 5 ? data[4] !== 0 : null,
+            // Byte 5 (firmware ≥ v2.2.3): persisted cable selection.
+            cableSelection: data.length >= 6 ? data[5] : null,
         };
     }
     return null;
@@ -448,12 +452,14 @@ async function queryGblinkLedUsb(device, iface) {
 async function detectGblinkFirmware(device, iface) {
     let version = null;
     let landingEnabled = null;
+    let cableSelection = null;
 
     try {
         const info = await queryGblinkFirmwareVersion(device, iface);
         if (info) {
             version = normalizeKnownGblinkVersion(stripVersionPrefix(info.version));
             landingEnabled = info.landingEnabled;
+            cableSelection = info.cableSelection;
         }
     } catch {}
 
@@ -462,6 +468,7 @@ async function detectGblinkFirmware(device, iface) {
         label: formatKnownGblinkVersionLabel(version),
         version,
         landingEnabled,
+        cableSelection,
     };
 }
 
@@ -570,15 +577,17 @@ function createDeviceHealth({
     usbIdEl,
     landingEl,
     landingToggleEl,
+    cableEl,
+    cableSelectEl,
     serialNoteEl,
     ledEl,
     ledRowsEl,
     ledResetBtn,
-    ledRebootBtn,
-    ledRebootNoteEl,
     onReady,
     onGone,
     isUpdating,
+    isAwaitingReconnect,
+    consumeUpdatedFrom,
 }) {
     let activeDevice = null;
     let activeIface = null;
@@ -641,6 +650,16 @@ function createDeviceHealth({
         }
     }
 
+    // Show the cable selection only when the firmware reports one.
+    function setCable(firmwareInfo) {
+        if (!cableEl) return;
+        const supported = firmwareInfo?.cableSelection != null;
+        cableEl.hidden = !supported;
+        if (supported && cableSelectEl) {
+            cableSelectEl.value = String(firmwareInfo.cableSelection);
+        }
+    }
+
     // --- Per-mode LED colours ---
 
     const rgbToHex = (c) => '#' + c.map(x => x.toString(16).padStart(2, '0')).join('');
@@ -674,14 +693,8 @@ function createDeviceHealth({
         }
     }
 
-    // Live preview (not persisted) so the LED tracks the picker/slider while
-    // dragging. Throttled — dragging fires a flood of input events and each send
-    // is a USB/serial round-trip; persisting still happens on the final change.
-    let lastLiveSend = 0;
-    async function ledSetLive([r, g, b]) {
-        const now = Date.now();
-        if (now - lastLiveSend < 40) return;
-        lastLiveSend = now;
+    // Show a colour on the LED right now (not persisted).
+    async function ledShowNow([r, g, b]) {
         const fam = activeFirmware?.family;
         try {
             if (activeSerial) {
@@ -695,6 +708,17 @@ function createDeviceHealth({
                 await setReconfigurableLiveLed(activeDevice, activeIface, r, g, b);
             }
         } catch {}
+    }
+
+    // Live preview so the LED tracks the picker/slider while dragging.
+    // Throttled — dragging fires a flood of input events and each send is a
+    // USB/serial round-trip; persisting still happens on the final change.
+    let lastLiveSend = 0;
+    async function ledSetLive(rgb) {
+        const now = Date.now();
+        if (now - lastLiveSend < 40) return;
+        lastLiveSend = now;
+        await ledShowNow(rgb);
     }
 
     function renderLed(labels, colors) {
@@ -736,10 +760,23 @@ function createDeviceHealth({
                 const pct = Number(slider.value);
                 return h.map(x => Math.round((x * pct) / 100));
             };
+            // Persist, then snap the LED back to the idle colour — the adapter
+            // sits in idle while the launcher holds it, and the live preview
+            // left the LED showing this row's colour.
+            const persist = async () => {
+                const c = compose();
+                colors[i] = c;
+                try {
+                    await ledSetMode(i, c);
+                    await ledShowNow(colors[0]);
+                } catch (err) {
+                    console.error('Failed to save LED color:', err);
+                }
+            };
             swatch.addEventListener('input', () => ledSetLive(compose()));
             slider.addEventListener('input', () => ledSetLive(compose()));
-            swatch.addEventListener('change', () => ledSetMode(i, compose()));
-            slider.addEventListener('change', () => ledSetMode(i, compose()));
+            swatch.addEventListener('change', () => { void persist(); });
+            slider.addEventListener('change', () => { void persist(); });
 
             row.append(top, slider);
             ledRowsEl.appendChild(row);
@@ -766,9 +803,8 @@ function createDeviceHealth({
             return;
         }
         renderLed(labels, colors);
-        if (ledRebootBtn) ledRebootBtn.disabled = false;
-        if (ledRebootNoteEl) ledRebootNoteEl.hidden = true;
         ledEl.hidden = false;
+        return colors;
     }
 
     // Restore all per-mode colours to the firmware's built-in defaults, then
@@ -786,40 +822,14 @@ function createDeviceHealth({
                 }
             }
             await new Promise(resolve => setTimeout(resolve, 50));
-            await loadLed(activeFirmware);
+            const colors = await loadLed(activeFirmware);
+            if (colors) await ledShowNow(colors[0]);
         } catch (err) {
             console.error('Failed to reset LED colors:', err);
         }
     }
 
     if (ledResetBtn) ledResetBtn.addEventListener('click', () => ledReset());
-
-    // Reboot the adapter so persisted settings (LED colours) take effect now. The
-    // colours are already saved on change — this just re-applies them at boot. The
-    // board re-enumerates; the USB connect handler auto-reconnects (WebUSB), while
-    // WebSerial users reconnect manually after the port drops.
-    async function ledRebootApply() {
-        const fam = activeFirmware?.family;
-        if (ledRebootBtn) ledRebootBtn.disabled = true;
-        if (ledRebootNoteEl) ledRebootNoteEl.hidden = false;
-        try {
-            if (activeSerial) {
-                await activeSerial.sendCommand(new Uint8Array([GBL_CMD_REBOOT]));
-            } else if (activeDevice && activeIface) {
-                if (fam === 'gblink') {
-                    await activeDevice.transferOut(activeIface.cmdEpOut, new Uint8Array([GBL_CMD_REBOOT]));
-                } else if (fam && fam.startsWith('reconfigurable')) {
-                    await rebootReconfigurable(activeDevice, activeIface);
-                }
-            }
-        } catch (err) {
-            // A reboot that races the USB stack can reject the transfer even though
-            // it took effect — that's expected, so don't surface it as a failure.
-            console.debug('Reboot command transfer ended:', err);
-        }
-    }
-
-    if (ledRebootBtn) ledRebootBtn.addEventListener('click', () => ledRebootApply());
 
     async function updatePanel(device, firmwareInfo) {
         setField(statusEl, 'Connected');
@@ -830,7 +840,9 @@ function createDeviceHealth({
         setField(usbIdEl, formatUsbId(device));
         if (serialNoteEl) serialNoteEl.hidden = true; // WebUSB path
         activeFirmware = firmwareInfo;
+        await maybeMigrateCableSelection(firmwareInfo);
         setLanding(firmwareInfo);
+        setCable(firmwareInfo);
 
         const [catalog, manifest] = await Promise.all([firmwareCatalog, firmwareManifest]);
         const target = resolveFirmwareTarget(catalog, manifest, firmwareInfo);
@@ -867,6 +879,7 @@ function createDeviceHealth({
         setField(firmwareEl, 'Bootloader (BOOTSEL)');
         setField(usbIdEl, formatUsbId(dev));
         if (landingEl) landingEl.hidden = true;
+        if (cableEl) cableEl.hidden = true;
         if (ledEl) ledEl.hidden = true; // bootrom has no firmware to query
         setConnected(true);
 
@@ -878,6 +891,7 @@ function createDeviceHealth({
         statusEl?.classList.remove('status-connected');
         statusEl?.classList.add('status-disconnected');
         if (landingEl) landingEl.hidden = true;
+        if (cableEl) cableEl.hidden = true;
         if (serialNoteEl) serialNoteEl.hidden = true;
         if (ledEl) ledEl.hidden = true;
         setConnected(false);
@@ -913,6 +927,43 @@ function createDeviceHealth({
             console.error('Failed to set WebUSB landing-page toggle:', err);
         }
     });
+
+    // Persist the cable selection on the adapter; the firmware applies it now.
+    async function sendCableSelection(value) {
+        if (activeSerial) {
+            await activeSerial.sendCommand(new Uint8Array([GBL_CMD_SET_CABLE_SELECTION, value]));
+            return;
+        }
+        if (!activeDevice || !activeIface) return;
+        if (activeFirmware?.family !== 'gblink') return;
+        await activeDevice.transferOut(
+            activeIface.cmdEpOut,
+            new Uint8Array([GBL_CMD_SET_CABLE_SELECTION, value]),
+        );
+    }
+
+    cableSelectEl?.addEventListener('change', async () => {
+        try {
+            await sendCableSelection(Number(cableSelectEl.value));
+        } catch (err) {
+            console.error('Failed to set cable selection:', err);
+        }
+    });
+
+    // One-time migration when an update crosses into cable-selection support:
+    // persist "auto detect" so an updated adapter keeps its old behavior
+    // (fresh installs default to GBC). Only the flash flow sets updatedFrom.
+    async function maybeMigrateCableSelection(firmwareInfo) {
+        const fromVersion = consumeUpdatedFrom?.();
+        if (fromVersion == null || firmwareInfo?.cableSelection == null) return;
+        if (compareVersions(fromVersion, GBLINK_CABLE_SELECTION_MIN_VERSION) >= 0) return;
+        try {
+            await sendCableSelection(GBL_CABLE_AUTO);
+            firmwareInfo.cableSelection = GBL_CABLE_AUTO;
+        } catch (err) {
+            console.error('Failed to set cable selection to auto after the update:', err);
+        }
+    }
 
     // Just after a device re-enumerates (e.g. right after flashing), open() can
     // transiently fail with "Access denied" before the OS releases the node.
@@ -1010,9 +1061,10 @@ function createDeviceHealth({
             let firmwareInfo;
 
             if (info.usbVendorId === GBLINK_VENDOR_ID) {
-                // Full support: read firmware version + landing flag over serial.
+                // Full support: read firmware version + settings over serial.
                 let version = null;
                 let landingEnabled = null;
+                let cableSelection = null;
                 try {
                     const reply = await transport.sendCommandAwaitReply(
                         new Uint8Array([GBL_CMD_GET_FIRMWARE_INFO]), 1000);
@@ -1020,6 +1072,7 @@ function createDeviceHealth({
                         version = normalizeKnownGblinkVersion(
                             stripVersionPrefix(formatVersion(reply[1], reply[2], reply[3])));
                         landingEnabled = reply.length >= 5 ? reply[4] !== 0 : null;
+                        cableSelection = reply.length >= 6 ? reply[5] : null;
                     }
                 } catch {}
                 firmwareInfo = {
@@ -1027,6 +1080,7 @@ function createDeviceHealth({
                     label: formatKnownGblinkVersionLabel(version),
                     version,
                     landingEnabled,
+                    cableSelection,
                 };
             } else {
                 // Reconfigurable / unknown: commands are WebUSB-only and the
@@ -1036,6 +1090,7 @@ function createDeviceHealth({
                     label: 'Reconfigurable adapter',
                     version: null,
                     landingEnabled: null,
+                    cableSelection: null,
                 };
             }
 
@@ -1065,7 +1120,9 @@ function createDeviceHealth({
         if (serialNoteEl) serialNoteEl.hidden = false;
 
         activeFirmware = firmwareInfo;
+        await maybeMigrateCableSelection(firmwareInfo);
         setLanding(firmwareInfo);
+        setCable(firmwareInfo);
 
         const [catalog, manifest] = await Promise.all([firmwareCatalog, firmwareManifest]);
         const target = resolveFirmwareTarget(catalog, manifest, firmwareInfo);
@@ -1146,13 +1203,15 @@ function createDeviceHealth({
             }
         });
 
-        // Auto-reconnect the adapter when it (re)appears after load — chiefly to
-        // pick the board back up once it reboots into the freshly-flashed firmware.
-        // The 'connect' event only fires for post-load hotplugs (and only for
-        // already-permitted devices), so this never grabs a device on page load.
+        // Auto-reconnect ONLY the board coming back from a flash (update or
+        // fresh install). Any other (re)appearing adapter may be headed for
+        // another app — a game client reboots the adapter too — so leave it
+        // alone; connecting again is a manual click or a tab-switch reacquire.
         navigator.usb.addEventListener('connect', event => {
             const isKnown = GBLINK_USB_FILTERS.some(f => f.vendorId === event.device.vendorId);
-            if (isKnown && !activeDevice && !connecting) connect(event.device);
+            if (!isKnown || activeDevice || connecting) return;
+            if (isAwaitingReconnect && !isAwaitingReconnect()) return;
+            connect(event.device);
         });
     }
 
@@ -1198,10 +1257,20 @@ function createDeviceHealth({
             .catch(() => {});
     });
 
-    return { connect, disconnect, resetPanel };
+    // Called by the updater after flashing a board that was connected while
+    // already in BOOTSEL: that device won't fire a disconnect event, so drop it
+    // here — otherwise the stale activeDevice blocks auto and manual reconnect.
+    function releaseBootromDevice() {
+        if (activeDevice?.vendorId !== PICOBOOT_BOOTROM_VID) return;
+        activeDevice = null;
+        activeIface = null;
+    }
+
+    return { connect, disconnect, resetPanel, releaseBootromDevice };
 }
 
 function initDeviceHealthPanel() {
+    let health = null;
     const updater = createFirmwareUpdater({
         containerEl: document.getElementById('device-update'),
         iconEl: document.getElementById('device-update-icon'),
@@ -1218,9 +1287,10 @@ function initDeviceHealthPanel() {
         downloadLinkEl: document.getElementById('device-update-link'),
         reconnectBtn: document.getElementById('device-update-reconnect'),
         supportsOneClick: supportsRebootToBootsel,
+        onFlashed: () => health?.releaseBootromDevice(),
     });
 
-    createDeviceHealth({
+    health = createDeviceHealth({
         disconnectedEl: document.getElementById('device-disconnected'),
         connectedEl: document.getElementById('device-connected'),
         connectBtn: document.getElementById('device-connect'),
@@ -1232,15 +1302,17 @@ function initDeviceHealthPanel() {
         usbIdEl: document.getElementById('device-usb-id'),
         landingEl: document.getElementById('device-landing'),
         landingToggleEl: document.getElementById('device-landing-toggle'),
+        cableEl: document.getElementById('device-cable'),
+        cableSelectEl: document.getElementById('device-cable-select'),
         serialNoteEl: document.getElementById('device-serial-note'),
         ledEl: document.getElementById('device-led'),
         ledRowsEl: document.getElementById('device-led-rows'),
         ledResetBtn: document.getElementById('device-led-reset'),
-        ledRebootBtn: document.getElementById('device-led-reboot'),
-        ledRebootNoteEl: document.getElementById('device-led-reboot-note'),
         onReady: payload => updater.onDeviceReady(payload),
         onGone: () => updater.onDeviceGone(),
         isUpdating: () => updater.isUpdating(),
+        isAwaitingReconnect: () => updater.isAwaitingReconnect(),
+        consumeUpdatedFrom: () => updater.consumeUpdatedFrom(),
     });
 }
 
