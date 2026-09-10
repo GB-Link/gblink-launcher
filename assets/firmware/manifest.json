@@ -1,4 +1,10 @@
 {
+  "gblink-gamepad": [
+    {
+      "version": "1.0.0",
+      "uf2": "assets/firmware/gblink-gamepad.v1.0.0.uf2"
+    }
+  ],
   "gblink": [
     {
       "version": "2.2.3",

@@ -18,6 +18,18 @@ const CONNECT_CHOOSER_FILTERS = [...GBLINK_USB_FILTERS, { vendorId: PICOBOOT_BOO
 // (the bootrom can't tell us what was installed).
 const DEFAULT_FLASH_FAMILY = 'gblink';
 
+// The GB-Link gamepad firmware (GBA as a USB controller). It shares the GBLink
+// vendor ID and command framing (0x0F / 0x43) but uses its own product ID, and
+// only exposes its WebUSB "updater" identity while no GBA is connected.
+const GAMEPAD_FLASH_FAMILY = 'gblink-gamepad';
+const GBLINK_GAMEPAD_PRODUCT_ID = 0x000b;
+
+const SWAPPABLE_FAMILIES = ['gblink', GAMEPAD_FLASH_FAMILY];
+const FAMILY_LABELS = {
+    gblink: 'GBLink firmware',
+    [GAMEPAD_FLASH_FAMILY]: 'GBLink Gamepad firmware',
+};
+
 // Firmware version that introduced the 0x43 reboot-to-BOOTSEL command, which
 // lets the launcher flash updates in-browser without a physical BOOTSEL press.
 const GBLINK_REBOOT_BOOTSEL_MIN_VERSION = '2.1.2';
@@ -164,19 +176,54 @@ function loadFirmwareManifest() {
 // selectable in the dropdown. Returns null only when no firmware is bundled.
 function resolveFirmwareTarget(catalog, manifest, firmwareInfo) {
     const targetFamily = catalog?.[firmwareInfo.family]?.upgradeTo?.family ?? firmwareInfo.family;
-
-    // Use the device's own builds if present, otherwise fall back to the primary
-    // family (everything ships as gblink now, so e.g. reconfigurable adapters are
-    // offered the gblink upgrade).
     const ownVersions = manifest?.[targetFamily];
-    const versions = ownVersions ?? manifest?.[DEFAULT_FLASH_FAMILY];
+
+    const altLine = Boolean(ownVersions)
+        && targetFamily !== DEFAULT_FLASH_FAMILY
+        && SWAPPABLE_FAMILIES.includes(targetFamily);
+
+    // Primary list: the device's own builds if it is on the main line,
+    // otherwise the main line (reconfigurable adapters get the gblink upgrade;
+    // alternate-line adapters see the main line as the recommendation).
+    const primaryFamily = ownVersions && !altLine ? targetFamily : DEFAULT_FLASH_FAMILY;
+    const versions = primaryFamily === targetFamily ? ownVersions : manifest?.[DEFAULT_FLASH_FAMILY];
     if (!versions?.length) return null;
 
     // Default to the newest 2.x build; if there is none, the newest overall.
     const recommended = versions.find(v => parseVersion(v.version)?.major === 2) ?? versions[0];
 
+    // Dropdown entries: primary line first, then the other swappable line(s).
+    // Entries outside the device's own line are labelled with their firmware
+    // name so they read as explicit installs, never as updates.
+    const entry = (v, family) => ({
+        ...v,
+        family,
+        label: family === targetFamily && !altLine ? undefined : `${FAMILY_LABELS[family] ?? family} v${v.version}`,
+        recommended: family === primaryFamily && v.version === recommended.version,
+        installed: family === targetFamily && firmwareInfo.version != null && v.version === firmwareInfo.version,
+    });
+    const list = versions.map(v => entry(v, primaryFamily));
+    for (const family of SWAPPABLE_FAMILIES) {
+        if (family === primaryFamily || !manifest?.[family]?.length) continue;
+        list.push(...manifest[family].map(v => entry(v, family)));
+    }
+
     let updateAvailable;
-    if (!ownVersions) {
+    let heading = null;      // heading override (null = the stock update/up-to-date text)
+    let latestLabel = null;  // text shown next to the heading (null = `v${latest}`)
+    let defaultIndex = list.findIndex(v => v.recommended);
+    if (altLine) {
+        const ownNewest = ownVersions[0];
+        updateAvailable = firmwareInfo.version != null
+            && compareVersions(firmwareInfo.version, ownNewest.version) < 0;
+        if (updateAvailable) {
+            latestLabel = `${FAMILY_LABELS[targetFamily] ?? targetFamily} v${ownNewest.version}`;
+            defaultIndex = list.findIndex(v => v.family === targetFamily && v.version === ownNewest.version);
+        } else {
+            heading = 'Recommended firmware:';
+            latestLabel = `${FAMILY_LABELS[primaryFamily] ?? primaryFamily} v${recommended.version}`;
+        }
+    } else if (!ownVersions) {
         updateAvailable = true; // different firmware line — offer the upgrade
     } else if (firmwareInfo.version == null) {
         updateAvailable = false;
@@ -189,7 +236,10 @@ function resolveFirmwareTarget(catalog, manifest, firmwareInfo) {
         uf2: recommended.uf2,
         updateAvailable,
         deviceVersion: firmwareInfo.version ?? null,
-        versions, // [{ version, uf2 }, ...] newest-first
+        versions: list, // [{ version, uf2, family, label?, recommended, installed }, ...]
+        defaultIndex: defaultIndex < 0 ? 0 : defaultIndex,
+        heading,
+        latestLabel,
     };
 }
 
@@ -543,8 +593,31 @@ async function detectTinyUsbFirmware(device, iface) {
     };
 }
 
+// The gamepad firmware answers 0x0F with [0x0F, major, minor, patch] and also
+// stamps its version into bcdDevice; it has no landing-page or cable settings.
+async function detectGamepadFirmware(device, iface) {
+    let version = null;
+    try {
+        const info = await queryGblinkFirmwareVersion(device, iface);
+        if (info) version = stripVersionPrefix(info.version);
+    } catch {}
+    version ??= descriptorVersionString(device);
+
+    return {
+        family: GAMEPAD_FLASH_FAMILY,
+        label: version ? `GBLink Gamepad v${version}` : 'GBLink Gamepad',
+        version,
+        landingEnabled: null,
+        cableSelection: null,
+    };
+}
+
 async function detectFirmware(device, iface) {
-    if (iface.isGblink) return detectGblinkFirmware(device, iface);
+    if (iface.isGblink) {
+        return device.productId === GBLINK_GAMEPAD_PRODUCT_ID
+            ? detectGamepadFirmware(device, iface)
+            : detectGblinkFirmware(device, iface);
+    }
     if (iface.isTinyUsb) return detectTinyUsbFirmware(device, iface);
     return { family: 'unknown', label: 'Unknown', version: null };
 }
@@ -558,6 +631,7 @@ function formatUsbId(device) {
 // Whether the connected firmware understands the 0x43 reboot-to-BOOTSEL command
 // (gates one-click updates vs. a manual BOOTSEL press).
 function supportsRebootToBootsel(family, version) {
+    if (family === GAMEPAD_FLASH_FAMILY) return true; // every gamepad build has 0x43
     return (
         family === 'gblink' &&
         version != null &&

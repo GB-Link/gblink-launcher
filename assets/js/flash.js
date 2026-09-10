@@ -151,6 +151,9 @@ export function createFirmwareUpdater({
         if (!flashBtn || !target || !selected) return;
         if (usingCustom() || selected.version === 'custom') {
             flashBtn.textContent = 'Install custom firmware';
+        } else if (selected.label) {
+            // Another firmware line, or the device's own alternate line
+            flashBtn.textContent = `${selected.installed ? 'Reinstall' : 'Install'} ${selected.label}`;
         } else if (selected.version !== target.latest) {
             flashBtn.textContent = `Install v${selected.version}`;
         } else if (bootromDevice) {
@@ -293,9 +296,9 @@ export function createFirmwareUpdater({
         if (headingTextEl) {
             headingTextEl.textContent = bootromDevice
                 ? 'Bootloader mode — install:'
-                : target.updateAvailable ? 'Update available:' : 'Up to date — latest is';
+                : target.heading ?? (target.updateAvailable ? 'Update available:' : 'Up to date — latest is');
         }
-        if (versionEl) versionEl.textContent = `v${target.latest}`;
+        if (versionEl) versionEl.textContent = target.latestLabel ?? `v${target.latest}`;
     }
 
     // Reflect the currently-selected version in the download link + button label.
@@ -323,11 +326,19 @@ export function createFirmwareUpdater({
                 const opt = document.createElement('option');
                 opt.value = String(i);
                 const tags = [];
-                if (v.version === target.latest) { tags.push('recommended'); defaultIndex = i; }
-                if (target.deviceVersion && v.version === target.deviceVersion) tags.push('installed');
-                opt.textContent = tags.length ? `v${v.version} (${tags.join(', ')})` : `v${v.version}`;
+                // The target resolver marks the recommended and installed
+                // builds (entries carry a label when they belong to another
+                // firmware line than the device's own).
+                const isRecommended = v.recommended ?? (!v.label && v.version === target.latest);
+                const isInstalled = v.installed
+                    ?? (!v.label && Boolean(target.deviceVersion) && v.version === target.deviceVersion);
+                if (isRecommended) tags.push('recommended');
+                if (isInstalled) tags.push('installed');
+                const name = v.label ?? `v${v.version}`;
+                opt.textContent = tags.length ? `${name} (${tags.join(', ')})` : name;
                 versionSelectEl.appendChild(opt);
             });
+            defaultIndex = target.defaultIndex ?? Math.max(0, list.findIndex(v => v.recommended));
             const customOpt = document.createElement('option');
             customOpt.value = CUSTOM_VALUE;
             customOpt.textContent = customFirmware

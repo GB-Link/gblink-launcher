@@ -76,6 +76,18 @@
       }
     ]
   },
+  "gblink-gamepad": {
+    "name": "GBLink Gamepad (GBA as USB controller)",
+    "latest": "1.0.0",
+    "releases": [
+      {
+        "version": "1.0.0",
+        "tag": "v1.0.0",
+        "name": "GBA as USB controller: XInput / Switch / PS3 / PS4, on-GBA mode menu, launcher updater",
+        "published": "2026-08-25"
+      }
+    ]
+  },
   "reconfigurable-starlarkus": {
     "name": "gb-link-firmware-reconfigurable (Starlarkus)",
     "repository": "https://github.com/starlarkus/gb-link-firmware-reconfigurable",
