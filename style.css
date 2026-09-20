@@ -317,6 +317,8 @@ main {
 .game-grid .ereader-icon::after { width: 22px; height: 15px; }
 .game-grid .mmo-icon::after { width: 20px; height: 10px; border-radius: 10px 10px 2px 2px; transform: translate(-50%, -50%) translateY(6px); }
 .game-grid .mmo-icon::before { width: 9px; height: 9px; transform: translate(-50%, -50%) translateY(-5px); box-shadow: -9px 4px 0 -1.5px #a78bfa, 9px 4px 0 -1.5px #ec4899; }
+.game-grid .switch-icon::after { width: 23px; height: 12px; border-radius: 4px; }
+.game-grid .switch-icon::before { width: 11px; height: 8px; border-radius: 1px; }
 .game-grid .netplay-icon::before { width: 17px; height: 12px; border-width: 1.5px; transform: translate(-50%, -50%) translate(-5px, -2px); }
 .game-grid .netplay-icon::after { width: 8px; height: 13px; transform: translate(-50%, -50%) translate(8px, 2px); box-shadow: -5px -2px 0 -3px white, -3.5px -2px 0 -3px white, -2px -2px 0 -3px white; }
 .game-grid .terminal-icon::before { width: 20px; height: 15px; border-width: 1.5px; }
@@ -336,6 +338,32 @@ main {
     border: 2px solid white;
     box-shadow: inset 0 0 0 2px var(--bg-dark);
     background: linear-gradient(to bottom, #ec4899 50%, white 50%);
+}
+
+/* Switch link: a console with its two controllers */
+.switch-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 16px;
+    border-radius: 5px;
+    background: linear-gradient(90deg, #a78bfa 0 23%, white 23% 77%, #ec4899 77% 100%);
+}
+
+.switch-icon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 14px;
+    height: 10px;
+    border-radius: 1.5px;
+    background: var(--bg-dark);
+    z-index: 1;
 }
 
 .tetris-icon::after {

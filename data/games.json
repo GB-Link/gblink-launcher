@@ -26,6 +26,13 @@
     "icon": "pokemon-icon"
   },
   {
+    "name": "Pokémon FireRed & LeafGreen on Switch",
+    "description": "Trade and battle between a real GBA and FireRed / LeafGreen on Nintendo Switch. Sets up the ESP32 bridge and the adapter.",
+    "link": "https://switch.gblink.io",
+    "icon": "switch-icon",
+    "hover_description": "Requires an ESP32 board"
+  },
+  {
     "name": "Dr. Mario",
     "description": "Match capsules against opponents online with original hardware.",
     "link": "https://drmario.gblink.io",
