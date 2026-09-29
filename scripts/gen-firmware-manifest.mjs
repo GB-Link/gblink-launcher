@@ -5,7 +5,8 @@
 //
 // Drop a versioned .uf2 into assets/firmware/ named "<family>.v<version>.uf2"
 // (e.g. gblink.v2.1.2.uf2), run `node scripts/gen-firmware-manifest.mjs`, and
-// commit. No hand-editing of JSON needed.
+// commit. No hand-editing of JSON needed. A "beta." prefix
+// (beta.gblink.v2.2.6.uf2) marks a beta build of that family.
 
 import { readdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -15,7 +16,8 @@ const FIRMWARE_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'assets
 const MANIFEST = join(FIRMWARE_DIR, 'manifest.json');
 
 // "gblink.v2.1.2.uf2" -> { family: "gblink", version: "2.1.2" }
-const FILENAME_RE = /^(.+?)\.v?(\d+\.\d+\.\d+)\.uf2$/i;
+// "beta.gblink.v2.2.6.uf2" -> { family: "gblink", version: "2.2.6", beta: true }
+const FILENAME_RE = /^(beta\.)?(.+?)\.v?(\d+\.\d+\.\d+)\.uf2$/i;
 
 function compareVersions(a, b) {
     const pa = a.split('.').map(Number);
@@ -30,8 +32,10 @@ const byFamily = {};
 for (const file of readdirSync(FIRMWARE_DIR)) {
     const match = FILENAME_RE.exec(file);
     if (!match) continue;
-    const [, family, version] = match;
-    (byFamily[family] ??= []).push({ version, uf2: `assets/firmware/${file}` });
+    const [, beta, family, version] = match;
+    const entry = { version, uf2: `assets/firmware/${file}` };
+    if (beta) entry.beta = true;
+    (byFamily[family] ??= []).push(entry);
 }
 
 // Newest first, so the launcher can take [0] as the default to install.
@@ -42,6 +46,6 @@ for (const family of Object.keys(byFamily)) {
 writeFileSync(MANIFEST, JSON.stringify(byFamily, null, 2) + '\n');
 
 const summary = Object.entries(byFamily)
-    .map(([f, list]) => `${f}: ${list.map(r => r.version).join(', ')}`)
+    .map(([f, list]) => `${f}: ${list.map(r => r.version + (r.beta ? ' (beta)' : '')).join(', ')}`)
     .join(' | ');
 console.log(`Wrote ${MANIFEST}\n  ${summary || '(no firmware files found)'}`);

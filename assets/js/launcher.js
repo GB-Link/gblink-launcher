@@ -233,10 +233,11 @@ function resolveFirmwareTarget(catalog, manifest, firmwareInfo) {
 
     return {
         latest: recommended.version,
+        beta: Boolean(recommended.beta),
         uf2: recommended.uf2,
         updateAvailable,
         deviceVersion: firmwareInfo.version ?? null,
-        versions: list, // [{ version, uf2, family, label?, recommended, installed }, ...]
+        versions: list, // [{ version, uf2, beta?, family, label?, recommended, installed }, ...]
         defaultIndex: defaultIndex < 0 ? 0 : defaultIndex,
         heading,
         latestLabel,

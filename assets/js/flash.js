@@ -298,7 +298,7 @@ export function createFirmwareUpdater({
                 ? 'Bootloader mode — install:'
                 : target.heading ?? (target.updateAvailable ? 'Update available:' : 'Up to date — latest is');
         }
-        if (versionEl) versionEl.textContent = target.latestLabel ?? `v${target.latest}`;
+        if (versionEl) versionEl.textContent = target.latestLabel ?? `v${target.latest}${target.beta ? ' (beta)' : ''}`;
     }
 
     // Reflect the currently-selected version in the download link + button label.
@@ -332,6 +332,7 @@ export function createFirmwareUpdater({
                 const isRecommended = v.recommended ?? (!v.label && v.version === target.latest);
                 const isInstalled = v.installed
                     ?? (!v.label && Boolean(target.deviceVersion) && v.version === target.deviceVersion);
+                if (v.beta) tags.push('beta');
                 if (isRecommended) tags.push('recommended');
                 if (isInstalled) tags.push('installed');
                 const name = v.label ?? `v${v.version}`;
