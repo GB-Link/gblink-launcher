@@ -1,8 +1,8 @@
 {
   "gblink": [
     {
-      "version": "2.2.6",
-      "uf2": "assets/firmware/beta.gblink.v2.2.6.uf2",
+      "version": "2.2.7",
+      "uf2": "assets/firmware/beta.gblink.v2.2.7.uf2",
       "beta": true
     },
     {
