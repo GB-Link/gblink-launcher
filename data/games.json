@@ -33,10 +33,11 @@
     "hover_description": "Requires an ESP32 board"
   },
   {
-    "name": "Dr. Mario",
-    "description": "Match capsules against opponents online with original hardware.",
-    "link": "https://drmario.gblink.io",
-    "icon": "drmario-icon"
+    "name": "Pokémon Wonder Cards",
+    "description": "Send Mystery Gift Wonder Cards to Emerald, FireRed and LeafGreen on a real GBA.",
+    "link": "https://wondercard.gblink.io",
+    "icon": "wondercard-icon",
+    "hover_description": "Requires firmware 2.2.6+ and a GBC link cable"
   },
   {
     "name": "Yoshi",
@@ -49,6 +50,12 @@
     "description": "Receive rare historical event Pokémon.",
     "link": "https://distribution.gblink.io/",
     "icon": "distribution-icon"
+  },
+  {
+    "name": "Dr. Mario",
+    "description": "Match capsules against opponents online with original hardware.",
+    "link": "https://drmario.gblink.io",
+    "icon": "drmario-icon"
   },
   {
     "name": "Game Boy Printer",

@@ -315,6 +315,8 @@ main {
 .game-grid .distribution-icon::after { width: 20px; height: 15px; transform: translate(-50%, -50%) translateY(2px); }
 .game-grid .distribution-icon::before { width: 5px; height: 5px; transform: translate(-50%, -50%) translate(-3px, -7px); box-shadow: 6px 0 0 #ec4899; }
 .game-grid .ereader-icon::after { width: 22px; height: 15px; }
+.game-grid .wondercard-icon::after { width: 22px; height: 15px; }
+.game-grid .wondercard-icon::before { width: 8px; height: 8px; transform: translate(-50%, -50%) translateY(2px); }
 .game-grid .mmo-icon::after { width: 20px; height: 10px; border-radius: 10px 10px 2px 2px; transform: translate(-50%, -50%) translateY(6px); }
 .game-grid .mmo-icon::before { width: 9px; height: 9px; transform: translate(-50%, -50%) translateY(-5px); box-shadow: -9px 4px 0 -1.5px #a78bfa, 9px 4px 0 -1.5px #ec4899; }
 .game-grid .switch-icon::after { width: 23px; height: 12px; border-radius: 4px; }
@@ -533,6 +535,32 @@ main {
     background: #ec4899;
     transform: translate(-50%, -50%) translate(-4px, -9px);
     box-shadow: 8px 0 0 #ec4899;
+    z-index: 1;
+}
+
+/* Wonder Cards: a Wonder Card with its star */
+.wondercard-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 28px;
+    height: 20px;
+    border-radius: 3px;
+    background: linear-gradient(to bottom, #a78bfa 0 28%, #fff 28%);
+}
+
+.wondercard-icon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 11px;
+    height: 11px;
+    background: #ec4899;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    transform: translate(-50%, -50%) translateY(3px);
     z-index: 1;
 }
 
