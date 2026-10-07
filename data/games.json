@@ -88,5 +88,12 @@
     "link": "https://gbammo.gblink.io/",
     "icon": "mmo-icon",
     "hover_description": "Requires a GBC link cable"
+  },
+  {
+    "name": "Mega Man/Rockman Chip Gate",
+    "description": "Emulate a Chip Gate and send Battle Chips to Mega Man Battle Network and Rockman EXE.",
+    "link": "https://megaman.gblink.io",
+    "icon": "chip-icon",
+    "hover_description": "Requires firmware 2.2.6+ and a GBC link cable"
   }
 ]
